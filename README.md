@@ -15,6 +15,8 @@ Moreover, certain astrophysical processes could lead to new massive objects that
 - Neutron star collisions.
 - Gas accretion in molecular clouds.
 - Manipulation of dark matter or dark energy.
+- ![Nanotechnology Materials](https://github.com/victor0989/Nanotechnology/blob/main/images/Quantum_physics/materials/Captura%20de%20pantalla%202025-03-22%20035850.png)
+
 
 ### Propulsion based on space-time distortions (Alcubierre Drive and variants):
 This drive is based on the expansion and contraction of space-time. To achieve this, negative energy would be needed, possibly from quantum vacuum or exotic effects from extra dimensions.
