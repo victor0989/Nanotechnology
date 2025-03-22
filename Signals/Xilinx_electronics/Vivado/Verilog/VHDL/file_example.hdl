@@ -1,0 +1,113 @@
+//Signal generation HDMI format or pixel but not/ROM jeje
+
+entity text_screen_gen is
+   port(
+      _, _: std_logic;
+      _: std_logic_vector(2 downto 0);
+      _: std_logic_vector(6 downto 0);
+      _: in std_logic;
+      _, _: in std_logic_vector(9 downto 0);
+     _: out std_logic_vector(2 downto 0)
+);
+end text_screen_gen;
+
+architecture arch of text_screen_gen is
+-- Font ROM
+signal char_addr: std_logic_vector(6 downto 0);
+signal rom_addr: std_logic_vector(10 downto 0);
+signal bit_addr: unsigned(2 downto 0);
+signal font_word: std_logic_vector(7 downto 0);
+signal font_bit: std_logic;
+-- tile RAM
+signal we: std_logic;
+signal addr_r, addr_w: std_logic_vector(11 downto 0);
+signal din, dout: std_logic_vector(6 downto 0);
+-- 80-by30 tile map
+constant MAX_X: integer:=80;
+constant MAX_Y: integer:=30;
+-- cursor
+signal cur_x_reg, cur_x_next: unsigned(6 downto 0);
+signal cur_y_reg, cur_y_next: unsigned(4 downto 0);
+signal move_x_tick, move_y_tick: std_logic;
+signal cursor_on: std_logic;
+-- delayed pixel count
+signal pix_x1_reg, pix_y1_reg: unsigned(9 downto 0);
+signal pix_x2_reg, pix_y2_reg: unsigned(9 downto 0);
+-- object output signals
+signal font_rgb, font_rev_rgb:
+         std_logic_vector(2 downto 0);
+begin
+   -- instantiate debounce circuit for two buttons
+debounce_unit0: entity work.debounce
+  port map(_=>_, _=>_, _=>btn(0),
+  _=>open, db_tick=>move_x_tick);
+
+debounce_unit1: entity work.debounce
+   port map(_=>_, _=>_, _=>btn(1),
+            db_level=>open, db_tick=>move_y_tick);
+-- Font ROM
+font_unit: entity work.font_rom
+   port map(_=>_, addr=>rom_addr, _=>font_word);
+-- instantiate dual-port tile RAM(2*12-by-7) 
+video-ram: entity work.xilinx-dual-port_ram_sync 
+   generic map(ADDR_WIDTH=>12, DATA_WIDTH=>7)
+   port map(_=>_, _=>_,
+            addr_a=>addr_w, addr_b=>addr_r, din_a=>din, dout_a=>open, dout_b=>dout);
+-- registers
+process()
+begin
+  if (_'event and _='1') then
+      cur_x_reg <= cur_x_next;
+      cur_y_reg <= cur_y_next;
+      pix_x1_reg <= pix_x1_reg;
+      pix_y1_reg <= unsigned(pixel_y);
+      pix_y2_reg <= pix_y1_reg;
+end if;
+end process;
+-- tile RAM write
+addr_w <=std_logic_vector(cur_y_reg & cur_x_reg);
+_ <= btn(2);
+din <= _;
+-- tile RAM read
+-- use undelayed coordinates form tile RAM address
+addr_r <= pixel_y(8 downto 4) & pixel_x(9 downto 3);
+char_addr <= dout;
+-- Font ROM
+row_addr<=pixel_y(3 downto 0);
+rom_addr <= char_addr & row_addr;
+-- use delayed coordinate to select a bit
+bit_addr<=pix_x2_reg(2 downto 0);
+font_bit <= font_word(to_integer(not bit_addr));
+-- new cursor position
+cur_x_next <=
+   (others=>'0') when move_x_tick='1' and -- wrap arount
+cur_x_reg=MAX_X-1 else
+cur_x_reg + 1 when move_x_tick='1' else cur_x_reg;
+cur_x_reg;
+cur_y_next <=
+   (others=>'0') when move_y_tick='1' else
+cur_x_reg + 1 when move_y_tick='1' and -- wrap
+                   cur_y_reg=MAX_Y-1 else
+when move_y_tick='1' else
+cur_y_reg;
+-- object signals
+-- green over black and reversed video or processor video for curser
+font_rgb <="010" when font_bit='1' else "000";
+font_rev_rgb <="000" when font_bit="1" else "010"
+-- use delayed coordinates for comparison
+cursor_on <='1' when pix_y2_reg(8 downto 4)=cur_y_reg and
+pix_x2_reg(9 downto 3)=cur_x_reg else '0';
+-- rgb multiplexing circuit
+process(video_on,cursor_on,font_rgb,font_rev_rgb)
+begin
+   if video_on='0' then
+      text_rgb <= "000"; --blank
+   else
+      if cursor_on='1' then
+         text_rgb <= font_rev_rgb;
+      else
+         text_rgb <= font_rgb;
+      end if;
+    end if;
+  end process;
+end arch;
