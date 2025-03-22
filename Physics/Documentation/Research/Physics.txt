@@ -1,0 +1,19 @@
+# Tensor transformation law (Eq. 3.1.2)
+T_prime = sum(x_alpha1, alpha1) * ... * x_alpha_l, alpha_l * x_nu1, nu1 * ... * x_nu_k, nu_k * T
+
+# Kronecker delta example (Eq. 3.1.3)
+delta_mu_nu = x_alpha, alpha * x_beta, beta * delta_alpha_beta
+
+# Symmetrization and Antisymmetrization (Eq. 3.1.4)
+T_symmetric = (1 / p!) * sum(permutations(mu1,...,mu_p))
+T_antisymmetric = (1 / p!) * sum((-1)^J * permutations(mu1,...,mu_p))
+
+# Contraction (Eq. 3.1.5)
+T_contracted = sum(delta_alpha_beta * T_beta...alpha)
+
+# Tensor transformation under coordinate change (Eq. 3.1.6)
+P_prime = sum(x_gamma, gamma * x_delta, delta * x_alpha, alpha * x_beta, beta * P)
+Q_prime = sum(x_gamma, gamma * x_nu, nu * x_alpha, alpha * x_mu, mu * Q)
+
+# Young tableau example to calculate the dimension K of the linear space (Eq. 3.1.12)
+K = (D-2) * (D-1) * D^2 * (D+1)^2 * (D+2) * (D+3) / (6 * 4^2 * 3 * 2 * 1)
