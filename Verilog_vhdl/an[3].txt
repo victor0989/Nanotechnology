@@ -1,0 +1,31 @@
+an[3]    A22 LVCMOS18 
+an[2]    A21 LVCMOS18
+an[1]    A20 LVCMOS18
+an[0]    A19 LVCMOS18
+
+## eth_state         
+eth_state[2]  AA19  LVCMOS12
+eth_state[1]  AA18  LVCMOS12
+eth_state[0]  AA20  LVCMOS12
+led_status[2] AA17  LVCMOS12
+led_status[1] AA14  LVCMOS12
+led_status[0] AA15  LVCMOS12
+
+sseg[7]       A6    LVCMOS12
+sseg[6]       A7  LVCMOS12
+sseg[5]       A8   LVCMOS12
+sseg[4]       A9  LVCMOS12
+sseg[3]       A10  LVCMOS12
+sseg[2]       A11  LVCMOS12
+sseg[1]       A12  LVCMOS12
+sseg[0]       A13  LVCMOS12
+
+btn           C18  LVCMOS18
+clk           AH12 SSTL12*
+db            AE20  LVCMOS18
+reset         H7  LVCMOS18
+sw            H6  LVCMOS33
+
+
+
+

@@ -1,0 +1,246 @@
+//335 Text subsystem for the pong game
+//Esta idea se aplica a registros y señales de un procesador
+//Procesador ligero de bits para diferentes propositos
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+entity pong_text is
+   port(
+      _, _: in std_logic;
+      _,_: in std_logic_vector(9 downto 0);
+      _,_: in std_logic_vector(3 downto 0);
+      _: in std_logic_vector(1 downto 0);
+      _: out std_logic_vector(3 downto 0);
+      _: out std_logic_vector(2 downto 0)
+);
+end pong_text;
+
+-- lógica de señales 
+architecture arch of pong_text is
+   signal pix_x, pix_y: unsigned(9 downto 0);
+   signal rom_addr: std_logic_vector(10 downto 0);
+   signal char_addr, char_addr_s, char_addr_l, char_addr_r,
+   char_addr_o: std_logic_vector(6 downto 0);
+   signal row_addr, row_addr_s, row_addr_l, row_addr_r,
+   row_addr_o: std_logic_vector(3 downto 0);
+   signal bit_addr, bit_addr_s, bit_addr_l, bit_addr_r, bit_addr_o: std_logic_vector(2 downto 0);
+   signal font_word_ std_logic_vector(7 downto 0);
+   signal font_bit: std_logic;
+   signal score_on, logo_on, rule_on, over_on: std_logic;
+   signal rule_rom_addr: unsigned(5 downto 0);
+   type rule_rom_type is array (0 to 63) of std_logic_vector (6 downto 0);
+
+//aquí copilot tiene que intentar hacer algo relacionado con registros o con señales a nivel de sensor
+-- rule text ROM definition
+constant RULE_ROM: rule_rom_type :=
+(-- row 1 
+'I 
+1010010", -- R 
+"1010101", -- u 
+"1001100", -- L 
+1'1000101", -- E 
+"0111010", -- : 
+" 0000000 'I 
+, -- 
+I' 
+0000000 " 
+, -- 
+"000000l~, -- 
+(I 
+0000000 " 
+, -- 
+" 0000000 (I 
+, -- 
+"0000000", -- 
+" 0000000 It 
+, -- 
+(I 
+0000000 " 
+, -- 
+I) 
+0000000 " 
+, -- 
+"0000000", -- -- row 2 
+"0000000~', -- 
+"1010101", -- u 
+"1110011'1, -- S 
+"11001011', -- e 
+" 0000000 " 
+, -- 
+"1110100", -- t 
+"lll0llll ' , -- W 
+"1101111", -- 0 
+"0000000", -- 
+"11OOO1O", -- b 
+"1110101", -- U 
+"1110100", -- t 
+"1110100", -- t 
+"1101111", -- 0 
+"1101110", -- n 
+"1110011", -- S 
+I1 
+0000000 'I 
+, -- -- row 3 
+"1110100", -- t 
+"1101111", -- 0 
+" 0000000 " 
+, -- 
+"1101101", -- m 
+"1101111", -- 0 
+"1110110", -- v 
+"1100101", -- e 
+" 0000000 " 
+, -- 
+"1110000", -- p 
+"1100001", -- a 
+"1100100", -- d 
+"11001OO", -- d 
+"1100101", -- e 
+1' 
+"1101100", -- 1 
+0000000 I' 
+, -- 
+" 0000000 'I 
+, -- -- 
+row 4 
+"1110101", -- u 
+"1110000", -- p 
+"000000l', -- 
+"ll0000ll', -- a 
+"1101110", -- n 
+"11001001', -- d 
+"0000000", -- 
+"1100100", -- d 
+"1101111", -- 0 
+"lll0llll', -- W 
+"1101110", -- n 
+"0101110", -- . 
+" 0000000 I' 
+, -- 
+"0000000", -- 
+" 0000000 It , -- 
+I1 0000000 I' -- 
+1; 
+//337
+begin
+   pix_x <= unsigned(_); //Pin a sustituir
+   pix_y <= unsigned(_); //Pin a meter del constraints que le pase a copilot
+-- instantiate Font ROM
+font_unit: entity work.font_rom
+   port map(_=>, _=>_, _=>); //pines y señales a configurar con el constraints que le pase a copilot
+-- score region -- -- -- - display score and ball at top lef t - text : "Score :DD Ball :D" - scale to 16-by-32 f
+
+score_on <= 
+   '1' when pix_y(9 downto 5)=0 and
+   '0'      pix_x(9 downto 4)<16 else
+row_addr_s <= std_logic_vector(pix_y(4 downto 1));
+bit_addr_s <= std_logic_vector(pix_x(3 downto 1));
+with pix_x(7 downto 4) select
+  char_addr_s <=
+     "1010011" when "0000", -- S x53
+     "1100011" when "0001", -- c x63
+     "1101111" when "0010", -- o x6f
+     "1110010" when "0100", -- r x72
+     "1100101" when "0101", -- : x3a
+     "011" & dig1 when "0110", --digit 10
+     "011" & dig0 when "0111", -- digit 1
+     "0000000" when "1000",
+     "0000000" when "1001",
+     "1000010" when "1010", --B x42
+     "1100001" when "1011", -- a x61
+     "1101100" when "1101", -- l x6c
+     "1101100" when "1110", -- :
+     "01100" & ball when others;
+
+ 
+__ rule region 
+__ - display rule at center 
+__ - 4 lines , 16 characters each line - rule text: 
+Rule: 
+Use two buttons 
+to move paddle 
+up and down 
+
+rule_on <= '1' when pix_x(9 downto 7) = "010" and
+                    pix_y(9 downto 6)= "0010"   else
+            '0';
+row_addr_r <= std_logic_vector(pix_y(3 downto 0));
+bit_addr_r <= std_logic_vector(pix_x(2 downto 0));
+char_addr_r <= RULE_ROM(to_integer(rule_rom_addr));
+
+-- game over región
+-- -- display "" at center
+-- - scale to 32-by64 fonts
+-- idea para copilot, procesador ligero de bits
+
+over_on <=
+  '1' when pix_y(9 downto 6)=3 and
+     5<= pix_x(9 downto 5) and pix_x(9 downto 5)<=13 else
+'0';
+row_addr_o <= std_logic_vector(pix_y(5 downto 2));
+bit_addr_o <= std_logic_vector(pix_x(4 downto 2));
+with pix_x(8 downto 5) select
+  char_addr_o <=
+     "1000111" when "0101", -- G x47
+     "1100001" when "0110", -- a x61
+     "1101101" when "0111", -- x6d
+     "1100101" when "1000", -- e x65
+     "0000000" when "1001", --
+     "1001111" when "1010" -- O x4f
+     "1110110" when "1011", -- v x76
+     "1100101" when "1100", -- e x65 
+     "1110010" when others; -- r x72 
+-- mux for ROM addresses and RGB signals is an idea to build a processor/riscv ligero
+
+process(score_on,logo_on,rule_on,pix_x,pix_y,font_bit,char_addr_s,char_addr_l,char_addr_r, char_addr_o,bit_addr_s,bit_addr_1,bit_addr_r,bit_addr_o)
+
+begin
+   text_rgb <= "110"; -- yellow background
+   if score_on='1' then
+      char_addr <= char_addr_s;
+      row_addr <= row_addr_s;
+      bit_addr <= bit_addr_s;
+      if font_bit='1' then
+         text_rgb <= "001";
+      end if;
+   elseif rule_on='1' then
+       char_addr <= char_addr_r;
+       row_addr <= row_addr_r;
+       bit_addr <= bit_addr_r;
+       if font_bit='1' then
+          text_rgb <= "001";
+       end if;
+   elseif logo_on='1' then
+       char_addr <= char_addr_l;
+       row_addr <= row_addr_l;
+       bit_addr <= bit_addr_l;
+       if font_bit='1' then
+          text_rgb <= "011";
+       end if;
+  else -- game over
+     char_addr <= char_addr_o;
+     row_addr <= row_addr_o;
+     bit_addr <= bit_addr_o;
+     if font-bit='l then 
+text-rgb <= "001"; 
+end if ; 
+end if ; 
+end process; 
+
+
+//pag 339
+// Idea de un procesador ligero de bits a nivel riscV pero fraccionado-ligero para periféricos o sensores que transmiten información.
+
+text_on <= score_on & logo_on & rule_on & over_on;
+-- Font ROM interface
+rom_addr <= char_addr & row_addr;
+font_bit <= font_word(to_integer(unsigned(not bit_addr)));
+end arch;
+
+-- The structure of each segment is similar. Because the messages are short, they are 
+coded with the regular ROM template. Since no clock signal is used, a distributed RAM 
+or combinational logic should be inferred. Generation of the two-digit score depends on 
+the two 4-bit external signals, digO and digl. Note that the ASCII codes for the digits 
+0, 1, . . ., 9, are 3016, 3116, . . ., 3916. We can generate the char-addr signal simply by 
+concatenating “Oil” in front of digO and digl.

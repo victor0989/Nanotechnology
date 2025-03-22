@@ -1,0 +1,3 @@
+//ethernet_fsm.v module en verilog para recibir datos de sensores: //Script-file para el sensor de temperatura
+//sensor de temperatura y sensor de cambio en materiales de una turbina(se creativo copilot)
+//Manda señales para detectar corrosión y recíbelas a modo de HDMI a la SD o a una pantalla etc

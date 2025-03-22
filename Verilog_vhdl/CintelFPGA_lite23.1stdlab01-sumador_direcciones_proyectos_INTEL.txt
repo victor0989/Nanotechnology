@@ -1,0 +1,92 @@
+// C:/intelFPGA_lite/23.1std/lab01-sumador1b-sumador1b
+
+//Tipo de proyecto: Cyclone IV E:EP4CE10E22C8
+
+//PINES de cyclone IV 
+//Pagina 226
+
+ Device Configuration Pins
+ Table8–18 through Table8–21 describe the connections and functionality of all the 
+configuration related pins on CycloneIV devices. Table8–18 and Table8–19 list the 
+device pin configuration for the CycloneIV GX and CycloneIVE, respectively.
+ Table8–18. Configuration Pin Summary for Cyclone IV GX Devices 
+Bank Description Input/Output Dedicated Powered By Configuration Mode
+ 8 Data[4:2] Input — VCCIO FPP
+ 3 Data[7:5] Input — VCCIO FPP
+ 9 nCSO (2) Output — VCCIO AS
+ 3 CRC_ERROR Output — VCCIO/Pull-up (1) Optional, all modes
+ 9 DATA[0] (2) Input Yes VCCIO PS, FPP, AS
+ 9 DATA[1]/ASDO (2)
+ Input — VCCIO FPP
+ Output VCCIO AS
+ 3 INIT_DONE Output — Pull-up Optional, all modes
+ 3 nSTATUS Bidirectional Yes Pull-up All modes
+ 9 nCE Input Yes VCCIO All modes
+ 9 DCLK (2)
+ Input Yes VCCIO PS, FPP
+ Output VCCIO AS
+ 3 CONF_DONE Bidirectional Yes Pull-up All modes
+ 9 TDI Input Yes VCCIO JTAG
+ 9 TMS Input Yes VCCIO JTAG
+ 9 TCK Input Yes VCCIO JTAG
+ 9 nCONFIG Input Yes VCCIO All modes
+ 8 CLKUSR Input — VCCIO Optional
+ 3 nCEO Output — VCCIO Optional, all modes
+ 3 MSEL Input Yes VCCINT All modes
+ 9 TDO Output Yes VCCIO JTAG
+ 6 DEV_OE Input — VCCIO Optional
+ 6 DEV_CLRn Input — VCCIO Optional
+ Notes to Table8–18:
+ (1) The CRC_ERROR pin is a dedicated open-drain output or an optional user I/O pin. Active high signal indicates that the error detection circuit has 
+detected errors in the configuration SRAM bits. This pin is optional and is used when the CRC error detection circuit is enabled in the QuartusII 
+software from the Error Detection CRC tab of the Device and Pin Options dialog box. When using this pin, connect it to an external 10-k 
+pull-up resistor to an acceptable voltage that satisfies the input voltage of the receiving device.
+ (2) To tri-state AS configuration pins in the AS configuration scheme, turn on the Enable input tri-state on active configuration pins in user mode 
+option from the Device and Pin Options dialog box. This tri-states DCLK, nCSO, Data[0], and Data[1]/ASDO pins. Dual-purpose pins settings 
+for these pins are ignored. To set these pins to different settings, turn off the Enable input tri-state on active configuration pins in user mode 
+option and set the desired setting from the Dual-purpose Pins Setting menu.
+
+
+Table 1–15. Transceiver-FPGA Fabric Interface Ports in PIPE Mode
+ Transceiver Port Name
+ tx_datain[15..0] (1)
+ tx_ctrlenable[1..0] (1)
+ rx_dataout[15..0] (1)
+ rx_ctrldetect[1..0] (1)
+ tx_detectrxloop
+ PIPE 2.00 Port Name
+ TxData[15..0]
+ TxDataK[1..0]
+ RxData[15..0]
+ RxDataK[1..0]
+ TxDetectRx/Loopback
+ tx_forceelecidle
+ tx_forcedispcompliance
+ pipe8b10binvpolarity
+ powerdn[1..0] (2)
+ pipedatavalid
+ pipephydonestatus
+ pipeelecidle
+ pipestatus
+ Notes to Table 1–15:
+ TxElecIdle
+ TxCompliance
+ RxPolarity
+ PowerDown[1..0]
+ RxValid
+ PhyStatus
+ RxElecIdle
+ RxStatus[2..0]
+ (1) When used with PCIe hard IP block, the byte SERDES is not used. In this case, the data ports are 8 bits wide and 
+control identifier is 1 bit wide.
+ (2) Cyclone IV GX transceivers do not implement power saving measures in lower power states (P0s, P1, and P2), 
+except when putting the transmitter buffer in electrical idle in the lower power states.
+ Receiver Detection Circuitry
+ In PIPE mode, the transmitter supports receiver detection function with a built-in 
+circuitry in the transmitter PMA. The PCIe protocol requires the transmitter to detect 
+if a receiver is present at the far end of each lane as part of the link training and 
+synchronization state machine sequence. This feature requires the following 
+conditions:
+ ■ transmitter output buffer to be tri-stated
+ ■ have OCT utilization
+ ■ 125 MHz clock on the fixedclk port
