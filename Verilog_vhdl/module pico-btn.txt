@@ -1,0 +1,119 @@
+module pico-btn 
+( 
+input wire clk, reset, 
+input wire [7:01 sw, 
+input wire [1:01 btn, 
+output wire [3:01 an, 
+output wire [7:01 sseg 
+
+// signal declaration 
+// KCPSM3/ROM signals 
+wire [9:0] address; 
+wire [17:0] instruction; 
+wire [7: 01 port-id , out-port ; 
+reg C7:Ol in-port; 
+wire write-strobe , read-strobe ; 
+// 1/0 port signals 
+// output enable 
+reg [3:0] en-d; 
+// four-digit seven-segment led display 
+reg [7:01 ds3_reg, ds2_reg, dsl-reg, ds0-reg; 
+// two pushbuttons 
+reg btnc-flag-reg, btns-flag-reg; 
+wire btnc-f lag-next , btns-f lag-next ; 
+wire set-btnc-f lag, set-btns-f lag, clr-btn-f lag; 
+//body 
+// ----------------------------------=================== 
+// 
+1/0 modules 
+// -----------------------------------================== 
+disp-mux disp-unit 
+(.clk(clk), .reset(reset), 
+. in3 (ds3-reg), . in2 (ds2-reg), . in1 (dsl-reg), 
+.inO(dsO-reg), .an(an), .sseg(sseg)); 
+debounce btnc-unit 
+(. clk(c1k) , . reset (reset) , . sw (btn [o] ) , 
+. db-level() , . db-tick(set-btnc-f lag)) ; 
+debounce btns-unit 
+(.clk(clk), .reset(reset), .sw(btn[1]), 
+.db-level(), .db-tick(set-btns-flag)); 
+// ----------------------------------=================== 
+// 
+KCPSM and ROM instantiation 
+// ----------------------------------=================== 
+kcpsm3 proc-unit 
+(.clk(clk), 
+.reset(l'bO), 
+.address(address), 
+.instruction(instruction), .port-id(port-id), 
+.write-strobe(write-strobe), .out-port(out-port), 
+.read-strobe(read-strobe), .in-port(in-port), 
+.interrupt(l'bO), .interrupt-ack0); 
+btn-rom rom-unit 
+(. clk(c1k) , . address(address) , 
+.instruction(instruction)); 
+
+SQUARE PROGRAM WITH A SWITCH AND SEVEN-SEGMENT LED DISPLAY INTERFACE 
+output interface 
+outport port id: 
+0x00: ds0 
+0x01: dsl 
+0x02: d.s.2 
+0x03: ds3 
+// registers 
+always Q(posedge clk) 
+begin 
+if (en-d [Ol) 
+ds0-reg <= out-port ; 
+if (en-d [I] ) 
+dsl-reg <= out-port ; 
+if (en-d [2] ) 
+ds2-reg <= out-port ; 
+if (en-d [3] ) 
+ds3-reg <= out-port ; 
+end 
+// decoding circuit for enable signals 
+always Q* 
+if (write-strobe) 
+case (port-id [l: 01 ) 
+2'bOO: en-d = 4'bOOOI; 
+2'bOl: en-d = 4'bOOIO; 
+2'blO: en-d = 4'bOlOO; 
+2'bll: en-d = 4'biOOO; 
+endcase 
+else 
+en-d = 4'bOOOO; 
+// 
+90 
+95 
+I no 
+lor 
+// 
+// 
+/ / 
+input interface 
+input port id 
+0x00: flag 
+0x01: switch 
+// input register (for flags) 
+always Q(posedge clk) 
+begin 
+btnc-flag-reg <= btnc-flag-next; 
+btns-flag-reg <= btns-flag-next; 
+end 
+assign btnc-f lag-next = (set-btnc-f lag) ? l'bl : 
+(clr-btn-flag) ? l'bO : 
+btnc-flag-reg; 
+assign btns-flag-next = (set-btns-flag) ? l'bl : 
+(clr-btn-flag) ? lJbO : 
+btns-flag-reg; 
+// decoding circuit for clear signals 
+ID PICOBLAZE 110 INTERFACE 
+assign clr-btn-f lag = read-strobe && (port-id [0]==1' b0) ; 
+// input multiplexing 
+always Q* 
+case (port-id LO1 
+1 bO : in-port = {6'b0, btns-f lag-reg , btnc-f lag-reg); 
+1 'bl: in-port = sw; 
+endcase 
+endmodule 

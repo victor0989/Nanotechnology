@@ -1,0 +1,83 @@
+//multiplexing circuit
+always @*
+   case (port_id[1:0])
+      2'b00: data = in_data0;
+      2'b01: data = in_data1;
+      2'b10: data = in_data2;
+      2'b11: data = in_data3;
+endcase
+//decoding circuit
+always @*
+   if (read_strobe)
+      case (port_id[1:0])
+         2'b00: rv = 4'b0001;
+         2'b01: rv = 4'b0010;
+         2'b10: rv = 4'b0100;
+         2'b11: rv = 4'b1000;
+      endcase
+  else
+     rv = 4'b0000;
+
+//comments:Switch: provides the values of a and b and selects //the content of the LED display 
+//Pushbutton 0: loads the a and b alternately when pressed 
+Pushbutton 1: clears data RAM and relevant registers when pressed 
+Seven-segment LED: displays the selected 17-bit value in four hexadecimal digits    
+
+; data RAM address alias
+constant gpio0, 10
+constant gpio1, 11
+constant gpio2, 12
+constant gpio3, 13
+…
+; output port definitions
+constant sseg0-port , 00 
+constant ssegl-port , 01 
+constant sseg2_port, 02 
+constant sseg3_port, 03 
+. . . 
+disp-led : 
+fetch data, ledO 
+output data, sseg0-port 
+fetch data, ledl 
+output data, ssegl-port 
+fetch data, led2 
+output data, sseg2-port 
+fetch data, led3 
+output data, sseg3-port 
+return 
+
+//registers port-pins section
+; input port definitions 
+constant rd-f lag-port , 00 ;2 flags (xxxxxxsc): 
+constant sw-port , 01 
+;&bit switch 
+proc-btn : 
+input s3, rd-flag-port 
+;get flag 
+;check and process c button 
+test s3, 01 
+jump z , chk-btns 
+call init 
+jump proc-btn-done 
+chk-btns : 
+;check c button flag 
+;flag not set 
+;flag set , clear 
+;check and process s button 
+test s3, 02 
+;check s button flag 
+jump z , proc-btn-done 
+input data, sw-port 
+load addr, a-lsb 
+add addr , switch-a-b 
+store data, (addr) 
+;flag not set 
+;get switch 
+;get addr of a 
+; add o ffs e t 
+; write data to ram 
+;update current disp position 
+xor switch-a-b, 02 
+; toggle between 00, 02 
+proc-btn-done : 
+return  

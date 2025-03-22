@@ -1,0 +1,96 @@
+//UART y USB connector para transmisión de datos ethernet PHY
+
+ Table 3‐14: FPGA U1 to CP2105GM U166 Connections
+ XC7Z010 SoC (U161)
+ FPGA U1 
+Pin
+ Function Direction I/O Standard
+ Schematic Net 
+Name
+ CP2105GM Device (U166)
+ Pin
+ Function
+ Direction
+ C12
+ B15
+ W12
+ W13
+ Y13
+ AA13
+ TX
+ RX
+ Output
+ Input
+ XCKU5P FPGA (U1) 
+RX
+ TX
+ CTS
+ RTS
+ Input
+ Output
+ Output
+ Input
+ KCU116 Board User Guide
+ LVCMOS18 SYSCTLR_UART_TX
+ LVCMOS18 SYSCTLR_UART_RX
+ LVCMOS18
+ LVCMOS18
+ LVCMOS18
+ LVCMOS18
+ USB_UART_TX
+ USB_UART_RX
+ USB_UART_CTS
+ USB_UART_RTS
+ www.xilinx.com
+ 12
+ 13
+ 21
+ 20
+ 18
+ 19
+ RXD
+ TXD
+ TXD
+ RXD
+ CTS
+ RTS
+ Input
+ Output
+ Output
+ Input
+ Input
+ Output
+ Send Feedback
+ UG1239 (v1.3) January 25, 2023
+ 49
+Chapter 3: Board Component Descriptions
+ Table 3-15 lists the USB connector J164 pin assignments.
+ Table 3‐15: USB Connector J164 Pin Assignments
+ USB Connector (J164)
+ Schematic Net Name
+ Pin
+ Name
+ CP2105GM (U166)
+ Pin
+ Name
+ 1 VBU
+ S USB
+ _V
+ BU
+ S 
+2
+ 3
+ 5
+ D_P
+ D_N
+ GND
+ USB_UART_DATA_P
+ USB_UART_DATA_N
+ USB_VBUS_GND 
+ GND
+ 3
+ 4
+ 2, 25
+ D_P
+ D_N
+ GND

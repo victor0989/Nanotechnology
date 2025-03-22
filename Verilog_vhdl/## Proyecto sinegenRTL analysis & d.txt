@@ -1,0 +1,388 @@
+## Proyecto sinegen/RTL analysis & debugging
+
+============================================================
+Proyecto: Sinegen para ZCU106 UltraScale
+============================================================
+
+Este archivo sintetiza los pasos necesarios para:
+  - Crear un proyecto RTL en Vivado para la placa ZCU106.
+  - Incluir los archivos Verilog (sinegen y sinegen_demo).
+  - Configurar el archivo de constraints (XDC) para la placa.
+  - Sintetizar y programar la FPGA.
+
+------------------------------------------------------------
+1. Creación del Proyecto en Vivado
+------------------------------------------------------------
+a) Abrir Vivado IDE.
+b) Seleccionar "Create Project" y configurar lo siguiente:
+   - Project Name: "sinegen_proj"
+   - Project Type: RTL Project (sin simulación, si no se requiere)
+   - Agregar los siguientes archivos fuente:
+       • sinegen.v
+       • sinegen_demo.v
+   - Agregar el archivo de constraints: "ZCU106.xdc"
+   - Seleccionar la placa ZCU106 UltraScale (o definir manualmente la parte)
+c) Finalizar el asistente y abrir el proyecto.
+
+------------------------------------------------------------
+2. Código Verilog: sinegen.v
+------------------------------------------------------------
+Este módulo genera una onda sinusoidal utilizando un acumulador de fase y una tabla de búsqueda (LUT).
+
+`timescale 1ns / 1ps
+module sinegen(
+    input             clk,    // Reloj del sistema
+    input             reset,  // Reset asíncrono
+    input      [1:0]  sel,    // Selector de frecuencia
+    output reg signed [19:0] sine  // Salida de la onda sinusoidal (20 bits, con signo)
+);
+
+    // Acumulador de fase (16 bits)
+    reg [15:0] phase;
+    // Incremento de fase (determina la frecuencia de salida)
+    reg [15:0] phase_inc;
+
+    // Selección del incremento de fase según la señal 'sel'
+    always @(*) begin
+        case(sel)
+            2'b00: phase_inc = 16'd100;  // Frecuencia baja
+            2'b01: phase_inc = 16'd200;
+            2'b10: phase_inc = 16'd400;
+            2'b11: phase_inc = 16'd800;  // Frecuencia alta
+            default: phase_inc = 16'd100;
+        endcase
+    end
+
+    // Actualización del acumulador de fase
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            phase <= 16'd0;
+        else
+            phase <= phase + phase_inc;
+    end
+
+    // Generación de la onda sinusoidal mediante una LUT
+    // Se usan los 4 bits MSB del acumulador para indexar la LUT (16 muestras por ciclo)
+    always @(*) begin
+        case(phase[15:12])
+            4'd0:  sine = 20'sd0;
+            4'd1:  sine = 20'sd200000;
+            4'd2:  sine = 20'sd370000;
+            4'd3:  sine = 20'sd484000;
+            4'd4:  sine = 20'sd524287;  // Valor máximo (aprox. 2^19 - 1)
+            4'd5:  sine = 20'sd484000;
+            4'd6:  sine = 20'sd370000;
+            4'd7:  sine = 20'sd200000;
+            4'd8:  sine = 20'sd0;
+            4'd9:  sine = -20'sd200000;
+            4'd10: sine = -20'sd370000;
+            4'd11: sine = -20'sd484000;
+            4'd12: sine = -20'sd524287;
+            4'd13: sine = -20'sd484000;
+            4'd14: sine = -20'sd370000;
+            4'd15: sine = -20'sd200000;
+            default: sine = 20'sd0;
+        endcase
+    end
+
+endmodule
+
+------------------------------------------------------------
+3. Código Verilog: sinegen_demo.v
+------------------------------------------------------------
+Este módulo top instancia el generador de senos y un bloque ILA para depuración.  
+*(Nota: La IP del ILA debe estar configurada en Vivado y generar el módulo "ila_0".)*
+
+`timescale 1ns / 1ps
+// Atributos para que las herramientas marquen las señales para depuración
+(* mark_debug = "true" *) wire GPIO_BUTTONS_db;
+(* mark_debug = "true" *) wire GPIO_BUTTONS_dly;
+(* mark_debug = "true" *) wire GPIO_BUTTONS_re;
+
+module sinegen_demo(
+    input             clk,         // Reloj del sistema
+    input             reset,       // Reset
+    input      [1:0]  sineSel,     // Selector de frecuencia para sinegen
+    input      [3:0]  GPIO_BUTTONS,// Botones para depuración
+    output signed [19:0] sine     // Salida de la onda sinusoidal
+);
+
+    // Instanciación del generador de senos
+    sinegen u_sinegen (
+        .clk(clk),
+        .reset(reset),
+        .sel(sineSel),
+        .sine(sine)
+    );
+
+    // Instanciación del ILA para depuración (asegúrate de configurar la IP ILA en Vivado)
+    ila_0 u_ila (
+        .CLK    (clk),
+        .PROBE0 (sineSel),
+        .PROBE1 (sine),
+        .PROBE2 (GPIO_BUTTONS_db),
+        .PROBE3 (GPIO_BUTTONS_re),
+        .PROBE4 (GPIO_BUTTONS_dly),
+        .PROBE5 (GPIO_BUTTONS)
+    );
+
+endmodule
+
+------------------------------------------------------------
+4. Archivo de Constraints para ZCU106: ZCU106.xdc
+------------------------------------------------------------
+Ejemplo básico (ajusta los pines según tu placa y requerimientos):
+
+## Configuración del reloj de sistema
+set_property -dict { PACKAGE_PIN <PIN_CLK> IOSTANDARD LVCMOS33 } [get_ports { clk }];
+create_clock -name sysclk -period 10 -waveform {0 5} [get_ports { clk }];
+
+## Asignación de pines para el selector de frecuencia (sineSel)
+set_property -dict { PACKAGE_PIN <PIN_S0> IOSTANDARD LVCMOS33 } [get_ports { sineSel[0] }];
+set_property -dict { PACKAGE_PIN <PIN_S1> IOSTANDARD LVCMOS33 } [get_ports { sineSel[1] }];
+
+## Asignación de pines para los botones de depuración (GPIO_BUTTONS)
+set_property -dict { PACKAGE_PIN <PIN_BTN0> IOSTANDARD LVCMOS33 } [get_ports { GPIO_BUTTONS[0] }];
+set_property -dict { PACKAGE_PIN <PIN_BTN1> IOSTANDARD LVCMOS33 } [get_ports { GPIO_BUTTONS[1] }];
+set_property -dict { PACKAGE_PIN <PIN_BTN2> IOSTANDARD LVCMOS33 } [get_ports { GPIO_BUTTONS[2] }];
+set_property -dict { PACKAGE_PIN <PIN_BTN3> IOSTANDARD LVCMOS33 } [get_ports { GPIO_BUTTONS[3] }];
+
+## (Agrega aquí los pines para otros periféricos según sea necesario)
+------------------------------------------------------------
+5. Síntesis, Implementación y Programación
+------------------------------------------------------------
+a) Con el proyecto abierto en Vivado:
+   - Ejecuta **Run Synthesis**.
+   - Una vez completada la síntesis, ejecuta **Run Implementation**.
+   - Genera el bitstream (Generate Bitstream).
+   - Programa la FPGA conectando la placa ZCU106 y utilizando el hardware manager.
+
+------------------------------------------------------------
+6. Consideraciones Finales
+------------------------------------------------------------
+- Verifica que los pines asignados en el archivo XDC coincidan con la documentación de la placa ZCU106.
+- Ajusta los valores del incremento de fase (phase_inc) en el módulo **sinegen** para obtener la frecuencia deseada.
+- La IP del ILA debe configurarse y personalizarse en Vivado para que las señales marcadas sean visibles.
+- Puedes modificar o ampliar este ejemplo según las necesidades de tu proyecto.
+
+============================================================
+Fin del archivo sintético para el proyecto Sinegen en ZCU106
+============================================================
+
+**************************************************************************************************************************************************
+
+## rhdc_module
+
+`timescale 1ns / 1ps
+module ehdc_module (
+    input  wire         clk,               // Reloj de sistema
+    input  wire         reset,             // Reset del sistema
+    input  wire [15:0]  cam_data_in,       // Datos de entrada de la cámara
+    input  wire         cam_clk,           // Reloj de la cámara
+    input  wire         cam_sync,          // Sincronización de la cámara
+    output wire [15:0]  cam_data_out,      // Datos procesados de salida
+    input  wire [15:0]  pos_x,             // Posición en eje x
+    input  wire [15:0]  pos_y,             // Posición en eje y
+    input  wire [15:0]  pos_z,             // Posición en eje z
+    output wire         tmds_clk_p,        // HDMI TMDS clock positive
+    output wire         tmds_clk_n,        // HDMI TMDS clock negative
+    output wire [2:0]   tmds_data_p,       // HDMI TMDS data positive
+    output wire [2:0]   tmds_data_n,       // HDMI TMDS data negative
+    input  wire         temp_sensor,       // Sensor de temperatura
+    input  wire         press_sensor,      // Sensor de presión
+    input  wire         current_sensor,    // Sensor de corriente
+    output wire         heater_control,    // Control del calentador
+    output wire         watchdog_reset,    // Señal de reset del watchdog
+    output wire [7:0]   status_leds,       // LEDs de estado
+    input  wire         zoom_control,      // Control del zoom de la cámara
+    input  wire         power_control,     // Control de alimentación
+    input  wire [1:0]   btn,               // Botones para detección de flancos
+    output wire [3:0]   an,                // Ánodos de display de 7 segmentos
+    output wire [7:0]   sseg               // Segmentos de display de 7 segmentos
+);
+
+    //==========================================================================
+    // Declaración de señales internas
+    //--------------------------------------------------------------------------
+    // Corregimos el error declarando video_data como un bus de 8 bits,
+    // en lugar de un array. Así se puede indexar o conectar directamente.
+    wire [7:0] video_data;
+    // Declaramos la señal de salida del codificador TMDS (usualmente 10 bits)
+    wire [9:0] tmds_encoded;
+    
+    //==========================================================================
+    // Lógica de control de alimentación
+    //--------------------------------------------------------------------------
+    reg power_state;
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            power_state <= 1'b0;
+        else if (power_control)
+            power_state <= ~power_state;
+    end
+
+    //==========================================================================
+    // Lógica de telemetría de estado
+    //--------------------------------------------------------------------------
+    reg [15:0] temperature, pressure, current;
+    always @(posedge clk) begin
+        // Aquí se asume que los sensores son señales de 1 bit o que se adaptan;
+        // ajusta según el ancho real de tus sensores.
+        temperature <= {8'b0, temp_sensor};
+        pressure    <= {8'b0, press_sensor};
+        current     <= {8'b0, current_sensor};
+    end
+
+    //==========================================================================
+    // Lógica del watchdog timer
+    //--------------------------------------------------------------------------
+    reg [31:0] watchdog_counter;
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            watchdog_counter <= 32'b0;
+        else
+            watchdog_counter <= watchdog_counter + 1;
+    end
+    assign watchdog_reset = (watchdog_counter == 32'hFFFFFFFF);
+
+    //==========================================================================
+    // Control del zoom de la cámara
+    //--------------------------------------------------------------------------
+    reg [15:0] zoom_level;
+    always @(posedge clk or posedge reset) begin
+        if (reset)
+            zoom_level <= 16'b0;
+        else if (zoom_control)
+            zoom_level <= zoom_level + 1;
+    end
+
+    //==========================================================================
+    // Control del calentador
+    //--------------------------------------------------------------------------
+    assign heater_control = (temperature < 16'd300); // Ejemplo: encender si temp < 300
+
+    //==========================================================================
+    // Módulo de cámara
+    //--------------------------------------------------------------------------
+    camera_module cam_mod (
+        .clk          (clk),
+        .cam_data_in  (cam_data_in),
+        .cam_data_out (cam_data_out),
+        .cam_clk      (cam_clk),
+        .cam_sync     (cam_sync),
+        .pos_x        (pos_x),
+        .pos_y        (pos_y),
+        .pos_z        (pos_z)
+    );
+
+    //==========================================================================
+    // Conversión de datos térmicos a formato de video
+    //--------------------------------------------------------------------------
+    thermal_to_video converter (
+        .clk         (clk),
+        .thermal_data(cam_data_out),
+        .rgb_data    (video_data)  // Se conecta el bus de 8 bits video_data
+    );
+
+    //==========================================================================
+    // Codificación TMDS para HDMI
+    //--------------------------------------------------------------------------
+    tmds_encoder tmds_enc (
+        .clk        (clk),
+        .video_data (video_data),  // Se utiliza el bus completo sin indexar, pues ya es de 8 bits
+        .video_ctrl (1'b0),        // Ejemplo: sin señal de control
+        .tmds_data  (tmds_encoded)
+    );
+
+    //==========================================================================
+    // Módulo HDMI para transmitir los datos codificados
+    //--------------------------------------------------------------------------
+    hdmi_module hdmi_mod (
+        .pix_clk    (clk),            // Se asume que clk es adecuado como pixel clock
+        .video_data (tmds_encoded),   // Se usa la señal codificada
+        .tmds_clk_p (tmds_clk_p),
+        .tmds_clk_n (tmds_clk_n),
+        .tmds_data_p(tmds_data_p),
+        .tmds_data_n(tmds_data_n)
+    );
+
+    //==========================================================================
+    // LEDs de estado
+    //--------------------------------------------------------------------------
+    assign status_leds = {power_state, temperature[7:0]};
+
+    //==========================================================================
+    // Circuito de verificación y detección de flancos
+    //--------------------------------------------------------------------------
+    reg [7:0] b_reg, d_reg;
+    wire [7:0] b_next, d_next;
+    reg btn_reg, db_reg;
+    wire db_level, db_tick, btn_tick, clr;
+
+    // Instancia del módulo de multiplexación del display de 7 segmentos
+    disp_hex_mux disp_unit (
+        .clk   (clk),
+        .reset (reset),
+        .hex3  (b_reg[7:4]),
+        .hex2  (b_reg[3:0]),
+        .hex1  (d_reg[7:4]),
+        .hex0  (d_reg[3:0]),
+        .dp_in (4'b1011),
+        .an    (an),
+        .sseg  (sseg)
+    );
+
+    // Instancia del circuito de debouncing
+    db_fsm db_unit (
+        .clk   (clk),
+        .reset (reset),
+        .sw    (btn[1]),
+        .db    (db_level)
+    );
+
+    // Detección de flancos
+    always @(posedge clk) begin
+        btn_reg <= btn[1];
+        db_reg  <= db_level;
+    end
+    assign btn_tick = ~btn_reg & btn[1];
+    assign db_tick  = ~db_reg  & db_level;
+
+    //==========================================================================
+    // Contadores y reinicio mediante botón
+    //--------------------------------------------------------------------------
+    assign clr = btn[0];
+    always @(posedge clk) begin
+        b_reg <= b_next;
+        d_reg <= d_next;
+    end
+    assign b_next = (clr) ? 8'b0 : (btn_tick) ? b_reg + 1 : b_reg;
+    assign d_next = (clr) ? 8'b0 : (db_tick)  ? d_reg + 1 : d_reg;
+
+endmodule
+
+********************************************************************************************************************************
+
+EHDC instructions/spanish
+
+eclaración de video_data:
+Se agrega la línea
+
+verilog
+Copiar
+Editar
+wire [7:0] video_data;
+para definir video_data como un bus de 8 bits. De esta forma, al conectarlo o extraer sus bits (por ejemplo, en la instanciación del tmds_encoder), no se genera el error de “cannot index an array” ya que no se trata de un array de elementos, sino de un vector.
+
+Conexión en el tmds_encoder:
+En lugar de utilizar video_data[7:0] (lo que podría interpretarse erróneamente si video_data fuera un array), se conecta directamente la señal video_data. Esto asume que video_data ya es un vector de 8 bits.
+
+Conexión en el hdmi_module:
+Se utiliza la señal tmds_encoded (salida del tmds_encoder) para transmitir los datos HDMI. Esto es consistente con el flujo de procesamiento:
+
+thermal_to_video genera video_data (8 bits).
+tmds_encoder codifica ese dato y produce tmds_encoded (por ejemplo, de 10 bits).
+hdmi_module utiliza la señal codificada para generar las salidas TMDS.
+
+*******************************************************************************************************************************************************
+

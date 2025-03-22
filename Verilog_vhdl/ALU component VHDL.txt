@@ -1,0 +1,98 @@
+//ALU component VHDL
+library ieee;
+use ieee.std_logic_1164.all;
+use work.processor_functions.all;
+
+entity alu is
+    Port (
+        Clk       : IN  std_logic;
+        Nrst      : IN  std_logic;
+        ALU_cmd   : IN  std_logic_vector(2 downto 0);
+        ALU_zero  : OUT std_logic;
+        ALU_valid : IN  std_logic;
+        ALU_bus   : INOUT std_logic_vector(n-1 downto 0)
+    );
+end entity alu;
+
+architecture Behavioral of top_level is
+    -- Declaración de constantes y señales
+    constant n : integer := 16;  -- Tamaño de las palabras
+
+    -- Señales para el PC
+    signal pc_inc     : std_logic;
+    signal pc_load    : std_logic;
+    signal pc_valid   : std_logic;
+    signal pc_bus     : std_logic_vector(n-1 downto 0);
+
+    -- Señales para el IR
+    signal ir_load    : std_logic;
+    signal ir_valid   : std_logic;
+    signal ir_address : std_logic;
+    signal ir_opcode  : opcode;
+    signal ir_bus     : std_logic_vector(n-1 downto 0);
+
+    -- Señales para la ALU
+    signal alu_cmd    : std_logic_vector(2 downto 0);
+    signal alu_zero   : std_logic;
+    signal alu_valid  : std_logic;
+    signal alu_bus    : std_logic_vector(n-1 downto 0);
+
+    -- Bus interno compartido
+    signal internal_bus : std_logic_vector(n-1 downto 0);
+
+    -- Otras señales internas y del procesador
+    -- ... (por ejemplo, señales de control, datos, etc.)
+
+begin
+    -- Conexión del reloj y reset
+    -- Clk y Nrst ya están conectados.
+
+    -- Instancia del Módulo PC
+    U_pc: entity work.pc
+        port map (
+            Clk       => clk,
+            Nrst      => Nrst,
+            PC_inc    => pc_inc,
+            PC_load   => pc_load,
+            PC_valid  => pc_valid,
+            PC_bus    => internal_bus -- Conectado al bus interno
+        );
+
+    -- Instancia del Módulo IR
+    U_ir: entity work.ir
+        port map (
+            Clk        => clk,
+            Nrst       => Nrst,
+            IR_load    => ir_load,
+            IR_valid   => ir_valid,
+            IR_address => ir_address,
+            IR_opcode  => ir_opcode,
+            IR_bus     => internal_bus -- Conectado al bus interno
+        );
+
+    -- Instancia de la ALU
+    U_alu: entity work.alu
+        port map (
+            Clk       => clk,
+            Nrst      => Nrst,
+            ALU_cmd   => alu_cmd,
+            ALU_zero  => alu_zero,
+            ALU_valid => alu_valid,
+            ALU_bus   => internal_bus -- Conectado al bus interno
+        );
+
+    -- Lógica de control y conexiones internas
+    -- Implementa la lógica para generar pc_inc, pc_load, pc_valid
+    -- ir_load, ir_valid, ir_address, alu_cmd, alu_valid, etc.
+
+    -- Manejo del bus interno
+    -- Asegúrate de que solo un módulo conduce el bus en un momento dado
+    -- Controla esto mediante las señales PC_valid, IR_valid, ALU_valid
+
+    -- Conexión de UART
+    -- Instancia o lógica para manejar UART con RX_UART y TX_UART
+
+    -- Si interactúas con DDR4, conecta las señales adecuadamente
+    -- Asegúrate de que tu procesador o controlador de memoria maneje estas señales
+
+end architecture Behavioral;

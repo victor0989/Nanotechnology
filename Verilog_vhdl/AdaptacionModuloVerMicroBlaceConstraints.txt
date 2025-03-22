@@ -1,0 +1,64 @@
+################################################################################
+## System Clock Configuration/ADAPTACION ModuloVerilogAsignaciones
+################################################################################
+set_property -dict { PACKAGE_PIN W22 IOSTANDARD LVCMOS33 } [get_ports { clk }]
+create_clock -name sysclk -period 10 -waveform {0 5} [get_ports { clk }]
+
+################################################################################
+## System Reset
+################################################################################
+set_property -dict { PACKAGE_PIN U18 IOSTANDARD LVCMOS33 } [get_ports { reset }]
+
+################################################################################
+## (Otras asignaciones para cámaras, posición, HDMI, sensores, etc.)
+## – Se mantienen según tu archivo original.
+################################################################################
+
+################################################################################
+## Status LEDs (status_leds[7:0])
+################################################################################
+set_property -dict { PACKAGE_PIN AL11 IOSTANDARD LVCMOS12 } [get_ports { status_leds[0] }]
+set_property -dict { PACKAGE_PIN AL13 IOSTANDARD LVCMOS12 } [get_ports { status_leds[1] }]
+set_property -dict { PACKAGE_PIN AK13 IOSTANDARD LVCMOS12 } [get_ports { status_leds[2] }]
+set_property -dict { PACKAGE_PIN AG13 IOSTANDARD LVCMOS12 } [get_ports { status_leds[3] }]
+set_property -dict { PACKAGE_PIN AE15 IOSTANDARD LVCMOS12 } [get_ports { status_leds[4] }]
+set_property -dict { PACKAGE_PIN AM8 IOSTANDARD LVCMOS12 } [get_ports { status_leds[5] }]
+set_property -dict { PACKAGE_PIN AM9 IOSTANDARD LVCMOS12 } [get_ports { status_leds[6] }]
+set_property -dict { PACKAGE_PIN AM10 IOSTANDARD LVCMOS12 } [get_ports { status_leds[7] }]
+
+################################################################################
+## Buttons (btn[1:0])
+################################################################################
+set_property -dict { PACKAGE_PIN G13 IOSTANDARD LVCMOS12 } [get_ports { btn[0] }]
+set_property -dict { PACKAGE_PIN A17 IOSTANDARD LVCMOS12 } [get_ports { btn[1] }]
+
+################################################################################
+## 7-Segment Display Anodes (an[3:0])
+################################################################################
+set_property -dict { PACKAGE_PIN J55.1 IOSTANDARD LVCMOS18 } [get_ports { an[0] }]
+set_property -dict { PACKAGE_PIN J55.3 IOSTANDARD LVCMOS18 } [get_ports { an[1] }]
+set_property -dict { PACKAGE_PIN J55.5 IOSTANDARD LVCMOS18 } [get_ports { an[2] }]
+set_property -dict { PACKAGE_PIN J55.7 IOSTANDARD LVCMOS18 } [get_ports { an[3] }]
+
+################################################################################
+## 7-Segment Display Segments (sseg[7:0])
+################################################################################
+set_property -dict { PACKAGE_PIN J55.2 IOSTANDARD LVCMOS18 } [get_ports { sseg[0] }]
+set_property -dict { PACKAGE_PIN J55.4 IOSTANDARD LVCMOS18 } [get_ports { sseg[1] }]
+set_property -dict { PACKAGE_PIN J55.6 IOSTANDARD LVCMOS18 } [get_ports { sseg[2] }]
+set_property -dict { PACKAGE_PIN J55.8 IOSTANDARD LVCMOS18 } [get_ports { sseg[3] }]
+set_property -dict { PACKAGE_PIN J87.1 IOSTANDARD LVCMOS18 } [get_ports { sseg[4] }]
+set_property -dict { PACKAGE_PIN J87.3 IOSTANDARD LVCMOS18 } [get_ports { sseg[5] }]
+set_property -dict { PACKAGE_PIN J87.5 IOSTANDARD LVCMOS18 } [get_ports { sseg[6] }]
+set_property -dict { PACKAGE_PIN J87.7 IOSTANDARD LVCMOS18 } [get_ports { sseg[7] }]
+
+################################################################################
+## UART (rx, tx)
+## – Si deseas usar la UART, asigna pines libres para rx y tx; de lo contrario, déjalos sin conexión.
+################################################################################
+#set_property -dict { PACKAGE_PIN <UART_RX_PIN> IOSTANDARD LVCMOS33 } [get_ports { rx }]
+#set_property -dict { PACKAGE_PIN <UART_TX_PIN> IOSTANDARD LVCMOS33 } [get_ports { tx }]
+
+################################################################################
+## (Resto de las asignaciones: cámara, HDMI, USB, etc.)
+################################################################################

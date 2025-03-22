@@ -1,0 +1,16 @@
+## PC core/chip integrator
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity pc is
+    Port (
+        Clk       : IN std_logic;
+        Nrst      : IN std_logic;
+        PC_inc    : IN std_logic;
+        PC_load   : IN std_logic;
+        PC_valid  : IN std_logic;
+        PC_bus    : INOUT std_logic_vector(n-1 downto 0)
+    );
+end entity pc;
+

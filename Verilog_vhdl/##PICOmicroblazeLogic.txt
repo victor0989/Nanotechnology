@@ -1,0 +1,61 @@
+################################################################################
+## Asignaciones para el módulo pico_sio
+################################################################################
+
+## Reloj del sistema (clk) – ya asignado:
+set_property -dict { PACKAGE_PIN W22 IOSTANDARD LVCMOS33 } [get_ports { clk }];
+create_clock -name sysclk -period 10 -waveform {0 5} [get_ports { clk }];
+
+## Reset del procesador (reset)
+## Se reutiliza el pin del USB transceiver (RESET_B) pero se puede adaptar al nivel LVCMOS33
+set_property -dict { PACKAGE_PIN U117.4 IOSTANDARD LVCMOS33 } [get_ports { reset }];
+
+## Interruptores (sw[7:0])
+## Se usan los DIP switch existentes: los 4 bits de ps_mode y el 1° de gpio.
+set_property -dict { PACKAGE_PIN P7 IOSTANDARD LVCMOS33 } [get_ports { sw[0] }];    # ps_mode[0]
+set_property -dict { PACKAGE_PIN R7 IOSTANDARD LVCMOS33 } [get_ports { sw[1] }];    # ps_mode[1]
+set_property -dict { PACKAGE_PIN R8 IOSTANDARD LVCMOS33 } [get_ports { sw[2] }];    # ps_mode[2]
+set_property -dict { PACKAGE_PIN T8 IOSTANDARD LVCMOS33 } [get_ports { sw[3] }];    # ps_mode[3]
+set_property -dict { PACKAGE_PIN U8 IOSTANDARD LVCMOS33 } [get_ports { sw[4] }];    # gpio[0]
+## Los bits sw[5] a sw[7] no cuentan con pines físicos en este ejemplo; en el top-level puedes tiearlos a '0'.
+
+## LEDs (led[7:0])
+## Se asignan tres pines físicos para los LEDs disponibles:
+set_property -dict { PACKAGE_PIN AL11 IOSTANDARD LVCMOS12 } [get_ports { led[0] }];  # LED_0
+set_property -dict { PACKAGE_PIN AL13 IOSTANDARD LVCMOS12 } [get_ports { led[1] }];  # LED_1
+set_property -dict { PACKAGE_PIN AK13 IOSTANDARD LVCMOS12 } [get_ports { led[2] }];  # LED_2
+## Los bits led[3] a led[7] se pueden conectar a otros pines o dejarlos sin uso (siempre realizando el port mapping adecuado en el top-level).
+
+################################################################################
+## Asignaciones para el módulo memory
+################################################################################
+
+## Compartir el mismo reloj (clk):
+set_property -dict { PACKAGE_PIN W22 IOSTANDARD LVCMOS33 } [get_ports { clk }];
+
+## Reset para la memoria (Nrst)
+## Puedes usar el mismo pin de reset o asignar otro; en este ejemplo se reutiliza U117.4
+set_property -dict { PACKAGE_PIN U117.4 IOSTANDARD LVCMOS33 } [get_ports { Nrst }];
+
+## Señales de control
+set_property -dict { PACKAGE_PIN H8 IOSTANDARD LVCMOS33 } [get_ports { HDMI_SI5324_RST }];   # MAR_load
+set_property -dict { PACKAGE_PIN G8 IOSTANDARD LVCMOS33 } [get_ports { HDMI_SI5324_LOL }];   # MDR_load
+set_property -dict { PACKAGE_PIN M8 IOSTANDARD LVCMOS33 } [get_ports { HDMI_RX_PWR_DET }];   # MEM_en
+set_property -dict { PACKAGE_PIN M10 IOSTANDARD LVCMOS33 } [get_ports { HDMI_RX_HPD }];       # MEM_rw
+
+## Señal de validación del bus de memoria (HDMI_SI5324_INT_ALM)
+## Se debe asignar a un pin físico libre; en este ejemplo, se usa un pin ficticio (<PIN_INT_ALM>):
+set_property -dict { PACKAGE_PIN <PIN_INT_ALM> IOSTANDARD LVCMOS33 } [get_ports { HDMI_SI5324_INT_ALM }];
+
+## Bus de memoria (MEM_bus[7:0])
+## Debes asignar pines físicos a cada línea del bus. En este ejemplo se usan nombres ficticios (<PIN_MEM0>, etc.);
+## reemplázalos por los números de pines reales según tu esquemático.
+set_property -dict { PACKAGE_PIN <PIN_MEM0> IOSTANDARD LVCMOS33 } [get_ports { MEM_bus[0] }];
+set_property -dict { PACKAGE_PIN <PIN_MEM1> IOSTANDARD LVCMOS33 } [get_ports { MEM_bus[1] }];
+set_property -dict { PACKAGE_PIN <PIN_MEM2> IOSTANDARD LVCMOS33 } [get_ports { MEM_bus[2] }];
+set_property -dict { PACKAGE_PIN <PIN_MEM3> IOSTANDARD LVCMOS33 } [get_ports { MEM_bus[3] }];
+set_property -dict { PACKAGE_PIN <PIN_MEM4> IOSTANDARD LVCMOS33 } [get_ports { MEM_bus[4] }];
+set_property -dict { PACKAGE_PIN <PIN_MEM5> IOSTANDARD LVCMOS33 } [get_ports { MEM_bus[5] }];
+set_property -dict { PACKAGE_PIN <PIN_MEM6> IOSTANDARD LVCMOS33 } [get_ports { MEM_bus[6] }];
+set_property -dict { PACKAGE_PIN <PIN_MEM7> IOSTANDARD LVCMOS33 } [get_ports { MEM_bus[7] }];
+

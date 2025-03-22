@@ -1,0 +1,52 @@
+## Diseño/Hardware
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use work.processor_functions.all;
+
+entity simple_processor is
+    port (
+        clk      : in  std_logic;
+        reset    : in  std_logic;
+        rx_uart   : in  std_logic;
+        tx_uart   : out std_logic;
+        -- Señales para interactuar con DDR4
+        DDR4_SODIMM_A    : out std_logic_vector(16 downto 0);
+        DDR4_SODIMM_DQ   : inout std_logic_vector(63 downto 0);
+        DDR4_SODIMM_WE_n : out std_logic;
+        DDR4_SODIMM_CK_p : out std_logic;
+        DDR4_SODIMM_CK_n : out std_logic
+    );
+end entity;
+
+architecture Behavioral of simple_processor is
+    signal addr      : std_logic_vector(16 downto 0);
+    signal data      : std_logic_vector(63 downto 0);
+    signal we        : std_logic;
+    signal clk_ddr4  : std_logic;
+begin
+    DDR4_SODIMM_A <= addr;
+    DDR4_SODIMM_DQ <= data;
+    DDR4_SODIMM_WE_n <= we;
+    DDR4_SODIMM_CK_p <= clk_ddr4;
+    DDR4_SODIMM_CK_n <= not clk_ddr4;  -- Inverso de la señal de reloj
+
+    process(clk)
+    begin
+        if rising_edge(clk) then
+            if reset = '1' then
+                -- Inicialización
+                addr <= (others => '0');
+                data <= (others => '0');
+                we <= '0';
+                clk_ddr4 <= '0';
+            else
+                -- Ejecución de instrucciones
+                -- Implementar lógica para manejar DDR4
+            end if;
+        end if;
+    end process;
+
+end architecture;
+

@@ -1,0 +1,344 @@
+// ALU Function Codes
+`define ALU_AND         4'd0
+`define ALU_OR          4'd1
+`define ALU_XOR         4'd2
+`define ALU_NOT         4'd3
+`define ALU_ADD         4'd4
+`define ALU_ADDC        4'd5
+`define ALU_SUB         4'd6
+`define ALU_SUBC        4'd7
+`define ALU_NEG         4'd8
+`define ALU_CLR         4'd9
+`define ALU_SHL         4'd10
+`define ALU_SHLC        4'd11
+`define ALU_SHR         4'd12
+`define ALU_SHRC        4'd13
+`define ALU_INCR        4'd14
+`define ALU_DECR        4'd15
+
+module ALU_TB ();
+
+   reg  [3:0] func_code;
+   reg  [7:0] A;
+   reg  [7:0] B;
+   reg        CY_in;
+
+   wire [7:0] ALU_out;
+   wire       ALU_CY_out;
+   wire       ALU_SN_out;
+   wire       ALU_ZE_out;
+   wire       ALU_OV_out;
+   
+   ALU My_ALU
+     (
+       .func_code         ( func_code ),
+       .A_in              ( A ),
+       .B_in              ( B ),
+       .ALU_CY_in         ( CY_in ),
+       .o_ALU_out         ( ALU_out ),
+       .o_ALU_CY_out      ( ALU_CY_out ),
+       .o_ALU_SN_out      ( ALU_SN_out ),
+       .o_ALU_ZE_out      ( ALU_ZE_out ),
+       .o_ALU_OV_out      ( ALU_OV_out )
+     );
+
+  initial begin
+    $dumpfile ("dump.vcd"); $dumpvars;
+    $display ("TB Running...");
+
+    #1;
+   
+    //       -----------------INPUT-------------------    ------DESIRED OUTPUT-------
+    //         A            B                    CY_in      ALU_out    CY  SN  ZE  OV
+    $display ("==== Test AND ====");
+    do_test (8'b10100110, 8'b11000011, `ALU_AND,     1,   8'b10000010,  0,  1,  0,  0);
+    do_test (8'b00000000, 8'b00000000, `ALU_AND,     0,   8'b00000000,  0,  0,  1,  0);
+    do_test (8'b00000000, 8'b11111111, `ALU_AND,     1,   8'b00000000,  0,  0,  1,  0);
+    do_test (8'b11111111, 8'b00000000, `ALU_AND,     0,   8'b00000000,  0,  0,  1,  0);
+    do_test (8'b11111111, 8'b11111111, `ALU_AND,     1,   8'b11111111,  0,  1,  0,  0);
+
+    $display ("==== Test OR ====");
+    do_test (8'b10100110, 8'b11000011, `ALU_OR,      1,   8'b11100111,  0,  1,  0,  0);
+    do_test (8'b00000000, 8'b00000000, `ALU_OR,      0,   8'b00000000,  0,  0,  1,  0);
+    do_test (8'b00000000, 8'b11111111, `ALU_OR,      1,   8'b11111111,  0,  1,  0,  0);
+    do_test (8'b11111111, 8'b00000000, `ALU_OR,      0,   8'b11111111,  0,  1,  0,  0);
+    do_test (8'b11111111, 8'b11111111, `ALU_OR,      1,   8'b11111111,  0,  1,  0,  0);
+   
+    $display ("==== Test XOR ====");
+    do_test (8'b10100110, 8'b11000011, `ALU_XOR,     0,   8'b01100101,  0,  0,  0,  0);
+    do_test (8'b00000000, 8'b00000000, `ALU_XOR,     1,   8'b00000000,  0,  0,  1,  0);
+    do_test (8'b00000000, 8'b11111111, `ALU_XOR,     0,   8'b11111111,  0,  1,  0,  0);
+    do_test (8'b11111111, 8'b00000000, `ALU_XOR,     1,   8'b11111111,  0,  1,  0,  0);
+    do_test (8'b11111111, 8'b11111111, `ALU_XOR,     0,   8'b00000000,  0,  0,  1,  0);
+   
+    $display ("==== Test NOT ====");
+    do_test (8'b10100110, 8'b11000011, `ALU_NOT,     0,   8'b01011001,  0,  0,  0,  0);
+    do_test (8'b11111111, 8'b11000011, `ALU_NOT,     1,   8'b00000000,  0,  0,  1,  0);
+    do_test (8'b01111111, 8'b11000011, `ALU_NOT,     0,   8'b10000000,  0,  1,  0,  0);
+    do_test (8'b11111110, 8'b11000011, `ALU_NOT,     1,   8'b00000001,  0,  0,  0,  0);
+    do_test (8'b00000000, 8'b11000011, `ALU_NOT,     0,   8'b11111111,  0,  1,  0,  0);
+   
+    $display ("==== Test ADD ====");
+    do_test (8'd80,       8'd30,       `ALU_ADD,     0,   8'd110,       0,  0,  0,  0);
+    do_test (8'd100,      8'd37,       `ALU_ADD,     0,   8'd137,       0,  1,  0,  1);
+    do_test (8'd200,      8'd37,       `ALU_ADD,     0,   8'd237,       0,  1,  0,  0);
+    do_test (8'd45,       8'd200,      `ALU_ADD,     0,   8'd245,       0,  1,  0,  0);
+    do_test (8'd56,       8'd200,      `ALU_ADD,     0,   8'd0,         1,  0,  1,  0);
+    do_test (8'd100,      8'd37,       `ALU_ADD,     1,   8'd137,       0,  1,  0,  1);
+    do_test (8'd200,      8'd37,       `ALU_ADD,     1,   8'd237,       0,  1,  0,  0);
+    do_test (8'd45,       8'd200,      `ALU_ADD,     1,   8'd245,       0,  1,  0,  0);
+    do_test (8'd56,       8'd200,      `ALU_ADD,     1,   8'd0,         1,  0,  1,  0);
+    do_test (8'd255,      8'd1,        `ALU_ADD,     0,   8'd0,         1,  0,  1,  0);
+    do_test (8'd0,        8'd0,        `ALU_ADD,     0,   8'd0,         0,  0,  1,  0);
+   
+    $display ("==== Test ADDC ====");
+    do_test (8'd80,       8'd30,       `ALU_ADDC,     0,   8'd110,       0,  0,  0,  0);
+    do_test (8'd100,      8'd37,       `ALU_ADDC,     0,   8'd137,       0,  1,  0,  1);
+    do_test (8'd200,      8'd37,       `ALU_ADDC,     0,   8'd237,       0,  1,  0,  0);
+    do_test (8'd45,       8'd200,      `ALU_ADDC,     0,   8'd245,       0,  1,  0,  0);
+    do_test (8'd56,       8'd200,      `ALU_ADDC,     0,   8'd0,         1,  0,  1,  0);
+    do_test (8'd100,      8'd37,       `ALU_ADDC,     1,   8'd138,       0,  1,  0,  1);
+    do_test (8'd200,      8'd37,       `ALU_ADDC,     1,   8'd238,       0,  1,  0,  0);
+    do_test (8'd45,       8'd200,      `ALU_ADDC,     1,   8'd246,       0,  1,  0,  0);
+    do_test (8'd56,       8'd200,      `ALU_ADDC,     1,   8'd1,         1,  0,  0,  0);
+    do_test (8'd255,      8'd1,        `ALU_ADDC,     0,   8'd0,         1,  0,  1,  0);
+    do_test (8'd0,        8'd0,        `ALU_ADDC,     0,   8'd0,         0,  0,  1,  0);
+
+    $display ("==== Test SUB ====");
+    do_test (8'd255,      8'd255,      `ALU_SUB,      0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd255,      8'd137,      `ALU_SUB,      0,   8'd118,       0,  0,  0,  0);
+    do_test (8'd255,      8'd92,       `ALU_SUB,      1,   8'd163,       0,  1,  0,  0);
+    do_test (8'd255,      8'd1,        `ALU_SUB,      0,   8'd254,       0,  1,  0,  0);
+    do_test (8'd255,      8'd0,        `ALU_SUB,      0,   8'd255,       0,  1,  0,  0);
+    $display ("");
+    do_test (8'd137,      8'd255,      `ALU_SUB,      0,   8'd138,       1,  1,  0,  0);
+    do_test (8'd137,      8'd137,      `ALU_SUB,      0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd137,      8'd92,       `ALU_SUB,      0,   8'd45,        0,  0,  0,  1);
+    do_test (8'd137,      8'd1,        `ALU_SUB,      0,   8'd136,       0,  1,  0,  0);
+    do_test (8'd137,      8'd0,        `ALU_SUB,      1,   8'd137,       0,  1,  0,  0);
+    $display ("");
+    do_test (8'd92,       8'd255,      `ALU_SUB,      0,   8'd93,        1,  0,  0,  0);
+    do_test (8'd92,       8'd137,      `ALU_SUB,      0,   8'd211,       1,  1,  0,  1);
+    do_test (8'd92,       8'd92,       `ALU_SUB,      1,   8'd0,         0,  0,  1,  0);
+    do_test (8'd92,       8'd1,        `ALU_SUB,      0,   8'd91,        0,  0,  0,  0);
+    do_test (8'd92,       8'd0,        `ALU_SUB,      0,   8'd92,        0,  0,  0,  0);
+    $display ("");
+    do_test (8'd1,        8'd255,      `ALU_SUB,      0,   8'd2,         1,  0,  0,  0);
+    do_test (8'd1,        8'd137,      `ALU_SUB,      0,   8'd120,       1,  0,  0,  0);
+    do_test (8'd1,        8'd92,       `ALU_SUB,      0,   8'd165,       1,  1,  0,  0);
+    do_test (8'd1,        8'd1,        `ALU_SUB,      0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd1,        8'd0,        `ALU_SUB,      1,   8'd1,         0,  0,  0,  0);
+    $display ("");
+    do_test (8'd0,        8'd255,      `ALU_SUB,      0,   8'd1,         1,  0,  0,  0);
+    do_test (8'd0,        8'd137,      `ALU_SUB,      0,   8'd119,       1,  0,  0,  0);
+    do_test (8'd0,        8'd92,       `ALU_SUB,      0,   8'd164,       1,  1,  0,  0);
+    do_test (8'd0,        8'd1,        `ALU_SUB,      0,   8'd255,       1,  1,  0,  0);
+    do_test (8'd0,        8'd0,        `ALU_SUB,      1,   8'd0,         0,  0,  1,  0);
+
+    $display ("==== Test SUBC (no CY_in) ====");
+    do_test (8'd255,      8'd255,      `ALU_SUBC,     0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd255,      8'd137,      `ALU_SUBC,     0,   8'd118,       0,  0,  0,  0);
+    do_test (8'd255,      8'd92,       `ALU_SUBC,     0,   8'd163,       0,  1,  0,  0);
+    do_test (8'd255,      8'd1,        `ALU_SUBC,     0,   8'd254,       0,  1,  0,  0);
+    do_test (8'd255,      8'd0,        `ALU_SUBC,     0,   8'd255,       0,  1,  0,  0);
+    $display ("");
+    do_test (8'd137,      8'd255,      `ALU_SUBC,     0,   8'd138,       1,  1,  0,  0);
+    do_test (8'd137,      8'd137,      `ALU_SUBC,     0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd137,      8'd92,       `ALU_SUBC,     0,   8'd45,        0,  0,  0,  1);
+    do_test (8'd137,      8'd1,        `ALU_SUBC,     0,   8'd136,       0,  1,  0,  0);
+    do_test (8'd137,      8'd0,        `ALU_SUBC,     0,   8'd137,       0,  1,  0,  0);
+    $display ("");
+    do_test (8'd92,       8'd255,      `ALU_SUBC,     0,   8'd93,        1,  0,  0,  0);
+    do_test (8'd92,       8'd137,      `ALU_SUBC,     0,   8'd211,       1,  1,  0,  1);
+    do_test (8'd92,       8'd92,       `ALU_SUBC,     0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd92,       8'd1,        `ALU_SUBC,     0,   8'd91,        0,  0,  0,  0);
+    do_test (8'd92,       8'd0,        `ALU_SUBC,     0,   8'd92,        0,  0,  0,  0);
+    $display ("");
+    do_test (8'd1,        8'd255,      `ALU_SUBC,     0,   8'd2,         1,  0,  0,  0);
+    do_test (8'd1,        8'd137,      `ALU_SUBC,     0,   8'd120,       1,  0,  0,  0);
+    do_test (8'd1,        8'd92,       `ALU_SUBC,     0,   8'd165,       1,  1,  0,  0);
+    do_test (8'd1,        8'd1,        `ALU_SUBC,     0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd1,        8'd0,        `ALU_SUBC,     0,   8'd1,         0,  0,  0,  0);
+    $display ("");
+    do_test (8'd0,        8'd255,      `ALU_SUBC,     0,   8'd1,         1,  0,  0,  0);
+    do_test (8'd0,        8'd137,      `ALU_SUBC,     0,   8'd119,       1,  0,  0,  0);
+    do_test (8'd0,        8'd92,       `ALU_SUBC,     0,   8'd164,       1,  1,  0,  0);
+    do_test (8'd0,        8'd1,        `ALU_SUBC,     0,   8'd255,       1,  1,  0,  0);
+    do_test (8'd0,        8'd0,        `ALU_SUBC,     0,   8'd0,         0,  0,  1,  0);
+ 
+    $display ("==== Test SUBC (CY_in) ====");
+    do_test (8'd255,      8'd255,      `ALU_SUBC,     1,   8'd255,       1,  1,  0,  0);
+    do_test (8'd255,      8'd137,      `ALU_SUBC,     1,   8'd117,       0,  0,  0,  0);
+    do_test (8'd255,      8'd92,       `ALU_SUBC,     1,   8'd162,       0,  1,  0,  0);
+    do_test (8'd255,      8'd1,        `ALU_SUBC,     1,   8'd253,       0,  1,  0,  0);
+    do_test (8'd255,      8'd0,        `ALU_SUBC,     1,   8'd254,       0,  1,  0,  0);
+    $display ("");
+    do_test (8'd137,      8'd255,      `ALU_SUBC,     1,   8'd137,       1,  1,  0,  0);
+    do_test (8'd137,      8'd137,      `ALU_SUBC,     1,   8'd255,       1,  1,  0,  0);
+    do_test (8'd137,      8'd92,       `ALU_SUBC,     1,   8'd44,        0,  0,  0,  1);
+    do_test (8'd137,      8'd1,        `ALU_SUBC,     1,   8'd135,       0,  1,  0,  0);
+    do_test (8'd137,      8'd0,        `ALU_SUBC,     1,   8'd136,       0,  1,  0,  0);
+    $display ("");
+    do_test (8'd92,       8'd255,      `ALU_SUBC,     1,   8'd92,        1,  0,  0,  0);
+    do_test (8'd92,       8'd137,      `ALU_SUBC,     1,   8'd210,       1,  1,  0,  1);
+    do_test (8'd92,       8'd92,       `ALU_SUBC,     1,   8'd255,       1,  1,  0,  0);
+    do_test (8'd92,       8'd1,        `ALU_SUBC,     1,   8'd90,        0,  0,  0,  0);
+    do_test (8'd92,       8'd0,        `ALU_SUBC,     1,   8'd91,        0,  0,  0,  0);
+    $display ("");
+    do_test (8'd1,        8'd255,      `ALU_SUBC,     1,   8'd1,         1,  0,  0,  0);
+    do_test (8'd1,        8'd137,      `ALU_SUBC,     1,   8'd119,       1,  0,  0,  0);
+    do_test (8'd1,        8'd92,       `ALU_SUBC,     1,   8'd164,       1,  1,  0,  0);
+    do_test (8'd1,        8'd1,        `ALU_SUBC,     1,   8'd255,       1,  1,  0,  0);
+    do_test (8'd1,        8'd0,        `ALU_SUBC,     1,   8'd0,         0,  0,  1,  0);
+    $display ("");
+    do_test (8'd0,        8'd255,      `ALU_SUBC,     1,   8'd0,         1,  0,  1,  0);
+    do_test (8'd0,        8'd137,      `ALU_SUBC,     1,   8'd118,       1,  0,  0,  0);
+    do_test (8'd0,        8'd92,       `ALU_SUBC,     1,   8'd163,       1,  1,  0,  0);
+    do_test (8'd0,        8'd1,        `ALU_SUBC,     1,   8'd254,       1,  1,  0,  0);
+    do_test (8'd0,        8'd0,        `ALU_SUBC,     1,   8'd255,       1,  1,  0,  0);
+ 
+    $display ("==== Test NEG ====");
+    do_test (8'd255,      8'd89,       `ALU_NEG,      0,   8'd1,         0,  0,  0,  0);
+    do_test (8'd137,      8'd89,       `ALU_NEG,      0,   8'd119,       0,  0,  0,  0);
+    do_test (8'd128,      8'd89,       `ALU_NEG,      0,   8'd128,       0,  1,  0,  1);
+    do_test (8'd92,       8'd89,       `ALU_NEG,      0,   8'd164,       0,  1,  0,  0);
+    do_test (8'd1,        8'd89,       `ALU_NEG,      0,   8'd255,       0,  1,  0,  0);
+    do_test (8'd0,        8'd89,       `ALU_NEG,      0,   8'd0,         0,  0,  1,  0);
+   
+    $display ("==== Test NEG (CY_in) ====");
+    do_test (8'd255,      8'd89,       `ALU_NEG,      1,   8'd1,         0,  0,  0,  0);
+    do_test (8'd137,      8'd89,       `ALU_NEG,      1,   8'd119,       0,  0,  0,  0);
+    do_test (8'd128,      8'd89,       `ALU_NEG,      1,   8'd128,       0,  1,  0,  1);
+    do_test (8'd92,       8'd89,       `ALU_NEG,      1,   8'd164,       0,  1,  0,  0);
+    do_test (8'd1,        8'd89,       `ALU_NEG,      1,   8'd255,       0,  1,  0,  0);
+    do_test (8'd0,        8'd89,       `ALU_NEG,      1,   8'd0,         0,  0,  1,  0);
+
+    $display ("==== Test CLR ====");
+    do_test (8'd255,      8'd89,       `ALU_CLR,      1,   8'd0,         0,  0,  1,  0);
+    do_test (8'd137,      8'd89,       `ALU_CLR,      0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd74,       8'd89,       `ALU_CLR,      1,   8'd0,         0,  0,  1,  0);
+    do_test (8'd0,        8'd89,       `ALU_CLR,      0,   8'd0,         0,  0,  1,  0);
+
+    $display ("==== Test SHL ====");
+    do_test (8'b11010111, 8'b01010101, `ALU_SHL,      1,   8'b10101110,  1,  1,  0,  0);
+    do_test (8'b01010111, 8'b01010101, `ALU_SHL,      0,   8'b10101110,  0,  1,  0,  0);
+    do_test (8'b11010110, 8'b01010101, `ALU_SHL,      1,   8'b10101100,  1,  1,  0,  0);
+
+    $display ("==== Test SHLC ====");
+    do_test (8'b11010111, 8'b01010101, `ALU_SHLC,     0,   8'b10101110,  1,  1,  0,  0);
+    do_test (8'b01010111, 8'b01010101, `ALU_SHLC,     0,   8'b10101110,  0,  1,  0,  0);
+    do_test (8'b11010110, 8'b01010101, `ALU_SHLC,     0,   8'b10101100,  1,  1,  0,  0);
+    do_test (8'b11010111, 8'b01010101, `ALU_SHLC,     1,   8'b10101111,  1,  1,  0,  0);
+    do_test (8'b01010111, 8'b01010101, `ALU_SHLC,     1,   8'b10101111,  0,  1,  0,  0);
+    do_test (8'b11010110, 8'b01010101, `ALU_SHLC,     1,   8'b10101101,  1,  1,  0,  0);
+
+    $display ("==== Test SHR ====");
+    do_test (8'b11010111, 8'b01010101, `ALU_SHR,      1,   8'b01101011,  1,  0,  0,  0);
+    do_test (8'b01010111, 8'b01010101, `ALU_SHR,      0,   8'b00101011,  1,  0,  0,  0);
+    do_test (8'b11010110, 8'b01010101, `ALU_SHR,      1,   8'b01101011,  0,  0,  0,  0);
+
+    $display ("==== Test SHRC ====");
+    do_test (8'b11010111, 8'b01010101, `ALU_SHRC,     0,   8'b01101011,  1,  0,  0,  0);
+    do_test (8'b01010111, 8'b01010101, `ALU_SHRC,     0,   8'b00101011,  1,  0,  0,  0);
+    do_test (8'b11010110, 8'b01010101, `ALU_SHRC,     0,   8'b01101011,  0,  0,  0,  0);
+    do_test (8'b11010111, 8'b01010101, `ALU_SHRC,     1,   8'b11101011,  1,  1,  0,  0);
+    do_test (8'b01010111, 8'b01010101, `ALU_SHRC,     1,   8'b10101011,  1,  1,  0,  0);
+    do_test (8'b11010110, 8'b01010101, `ALU_SHRC,     1,   8'b11101011,  0,  1,  0,  0);
+
+    $display ("==== Test INCR ====");
+    do_test (8'd255,      8'd89,       `ALU_INCR,     0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd254,      8'd89,       `ALU_INCR,     1,   8'd255,       0,  1,  0,  0);
+    do_test (8'd137,      8'd89,       `ALU_INCR,     0,   8'd138,       0,  1,  0,  0);
+    do_test (8'd74,       8'd89,       `ALU_INCR,     1,   8'd75,        0,  0,  0,  0);
+    do_test (8'd1,        8'd89,       `ALU_INCR,     0,   8'd2,         0,  0,  0,  0);
+    do_test (8'd0,        8'd89,       `ALU_INCR,     1,   8'd1,         0,  0,  0,  0);
+
+    $display ("==== Test DECR ====");
+    do_test (8'd255,      8'd89,       `ALU_DECR,     0,   8'd254,       0,  1,  0,  0);
+    do_test (8'd254,      8'd89,       `ALU_DECR,     1,   8'd253,       0,  1,  0,  0);
+    do_test (8'd137,      8'd89,       `ALU_DECR,     0,   8'd136,       0,  1,  0,  0);
+    do_test (8'd74,       8'd89,       `ALU_DECR,     1,   8'd73,        0,  0,  0,  0);
+    do_test (8'd1,        8'd89,       `ALU_DECR,     0,   8'd0,         0,  0,  1,  0);
+    do_test (8'd0,        8'd89,       `ALU_DECR,     1,   8'd255,       0,  1,  0,  0);
+
+    #10;
+    $display ("Testing Complete!");
+    $finish ();
+   
+  end
+
+
+
+task do_test;
+  input  [7:0]  test_A;
+  input  [7:0]  test_B;
+  input  [3:0]  test_func_code;
+  input         test_CY_in;
+  input  [7:0]  Desired_out;
+  input         Desired_CY_out;
+  input         Desired_SN_out;
+  input         Desired_ZE_out;
+  input         Desired_OV_out;
+ 
+  reg signed [7:0] A_signed;
+  reg signed [7:0] B_signed;
+  reg signed [7:0] ALU_out_signed;
+ 
+  string str;
+  string oper;
+ 
+  begin
+    case (test_func_code)
+      `ALU_AND:      str = "AND  ";
+      `ALU_OR:       str = "OR   ";
+      `ALU_XOR:      str = "XOR  ";
+      `ALU_NOT:      str = "NOT  ";
+      `ALU_ADD:      str = "ADD  ";
+      `ALU_ADDC:     str = "ADDC ";
+      `ALU_SUB:      str = "SUB  ";
+      `ALU_SUBC:     str = "SUBC ";
+      `ALU_NEG:      str = "NEG  ";
+      `ALU_CLR:      str = "CLR  ";
+      `ALU_SHL:      str = "SHL  ";
+      `ALU_SHLC:     str = "SHLC ";
+      `ALU_SHR:      str = "SHR  ";
+      `ALU_SHRC:     str = "SHRC ";
+      `ALU_INCR:     str = "INCR ";
+      `ALU_DECR:     str = "DECR ";
+      default:       str = "xxx  ";
+    endcase
+ 
+    case (test_func_code)
+      `ALU_ADD:      oper = "+";
+      `ALU_ADDC:     oper = "+";
+      `ALU_SUB:      oper = "-";
+      `ALU_SUBC:     oper = "-";
+      default:       oper = "XXX";
+    endcase
+ 
+    A <= test_A;
+    B <= test_B;
+    A_signed <= test_A;
+    B_signed <= test_B;
+    func_code <= test_func_code;
+    CY_in <= test_CY_in;
+    #1;
+
+    ALU_out_signed <= ALU_out;
+    #1;
+
+    $display ("A: %8b   B: %8b   fun: %2d-%s   OUT: %8b   CY_in: %1b   CY_out: %1b   SN_out: %1b   ZE_out: %1b   OV_out: %1b       %3d %s %3d  =  %3d       %4d %s %4d  =  %4d",
+                 A, B, func_code, str, ALU_out, CY_in, ALU_CY_out, ALU_SN_out, ALU_ZE_out, ALU_OV_out, A, oper, B, ALU_out, A_signed, oper, B_signed, ALU_out_signed);
+    if ((ALU_out    !== Desired_out) ||
+        (ALU_CY_out !== Desired_CY_out) ||
+        (ALU_SN_out !== Desired_SN_out) ||
+        (ALU_ZE_out !== Desired_ZE_out) ||
+        (ALU_OV_out !== Desired_OV_out) )
+      begin
+        $display ("*************************************  Desired:  %8b                      %1b           %1b           %1b           %1b  *********************************************",
+                  Desired_out, Desired_CY_out, Desired_SN_out, Desired_ZE_out, Desired_OV_out);
+      end
+  end
+endtask
+ 
+endmodule

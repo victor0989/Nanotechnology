@@ -1,0 +1,50 @@
+## Diseño minimalista para un avión(Proyecto-nivel-medio)
+## Cámaras:
+## Interfaces mencionadas: USB 3.0 Transceiver y USB 2.0 ULPI PHY (páginas 34-38). Estas pueden soportar cámaras de alta resolución.
+## SD:
+## SD Card Interface (página 38): Correcto, es adecuada para almacenamiento de datos y carga de software.
+
+## RAM:
+## PS-Side: DDR4 SODIMM Socket (página 25) y PL-Side: DDR4 Component Memory (página 29): Ambas opciones son adecuadas para la ampliación de memoria.
+## FIFO buffer en VHDL:
+## Quad-SPI Flash Memory (página 32): Es relevante para almacenamiento temporal de datos. 
+## Puedes diseñar e implementar un buffer FIFO en VHDL para optimizar la transferencia de datos.
+
+Integraciones de scripts:
+
+MPSoC Device Configuration (página 19): Un buen punto de partida para configuraciones y automatizaciones a través de scripts.
+
+# Byte Lane 0 - DQS y DM
+set_property -dict { PACKAGE_PIN AP15 IOSTANDARD DIFF_SSTL12 } [get_ports { DDR4_SODIMM_DQS_p[0] }];
+set_property -dict { PACKAGE_PIN AN15 IOSTANDARD DIFF_SSTL12 } [get_ports { DDR4_SODIMM_DQS_n[0] }];
+set_property -dict { PACKAGE_PIN AM17 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_DM[0] }];
+
+# Byte Lane 1 - DQS y DM
+set_property -dict { PACKAGE_PIN AM16 IOSTANDARD DIFF_SSTL12 } [get_ports { DDR4_SODIMM_DQS_p[1] }];
+set_property -dict { PACKAGE_PIN AL16 IOSTANDARD DIFF_SSTL12 } [get_ports { DDR4_SODIMM_DQS_n[1] }];
+set_property -dict { PACKAGE_PIN AL17 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_DM[1] }];
+
+# Señales de Control
+set_property -dict { PACKAGE_PIN AM24 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_WE_n }];
+set_property -dict { PACKAGE_PIN AK24 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_CAS_n }];
+set_property -dict { PACKAGE_PIN AL24 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_RAS_n }];
+set_property -dict { PACKAGE_PIN AG25 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_ACT_n }];
+set_property -dict { PACKAGE_PIN AF22 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_ALERT_n }];
+set_property -dict { PACKAGE_PIN AF20 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_PARITY }};
+set_property -dict { PACKAGE_PIN AN28 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_CS_n[0] }];
+
+# Señales de Reloj
+set_property -dict { PACKAGE_PIN AN27 IOSTANDARD DIFF_SSTL12 } [get_ports { DDR4_SODIMM_CK_p }];
+set_property -dict { PACKAGE_PIN AN26 IOSTANDARD DIFF_SSTL12 } [get_ports { DDR4_SODIMM_CK_n }];
+
+# Señales de CKE y ODT
+set_property -dict { PACKAGE_PIN AN29 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_CKE[0] }];
+set_property -dict { PACKAGE_PIN AM30 IOSTANDARD SSTL12 } [get_ports { DDR4_SODIMM_ODT[0] }];
+
+## Pagina 27 Asignar DQ28-DQ63: Completa las asignaciones para las líneas de datos restantes desde DQ[28] hasta DQ[63].
+## Estrobos de Datos y Máscaras: Asegúrate de asignar los estrobos de datos DQS. 
+## las señales de máscara de datos DM para todos los byte lanes adicionales.
+## asignar DDR4_SODIMM_RESET_n, DDR4_SODIMM_ODT[1], DDR4_SODIMM_CKE[1]
+
+## I2C, SPI, CAN Bus/asignaciones y voltajes IOSTANDARD 1.2 1.8 12/18
+# Continúa asignando los demás pines necesarios para la DDR4 (BA, BG, DQ, DQS, CK, CS_n, CKE, ODT, etc.)

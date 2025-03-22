@@ -1,0 +1,124 @@
+// controller
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity controller is
+    port (
+        clk                  : in  std_logic;
+        Nrst                 : in  std_logic;
+        HDMI_TX_EN           : out std_logic;  -- IR_load
+        HDMI_RX_CEC_SINK     : out std_logic;  -- IR_valid
+        HDMI_TX_CEC          : out std_logic;  -- IR_address
+        HDMI_RX_SNK_SCL      : out std_logic;  -- PC_inc
+        HDMI_RX_SNK_SDA      : out std_logic;  -- PC_load
+        HDMI_TX_HPD          : out std_logic;  -- PC_valid
+        HDMI_SI5324_LOL      : out std_logic;  -- MDR_load
+        HDMI_SI5324_RST      : out std_logic;  -- MAR_load
+        HDMI_SI5324_INT_ALM  : out std_logic;  -- MAR_valid
+        HDMI_RX_PWR_DET      : out std_logic;  -- M_en
+        HDMI_RX_HPD          : out std_logic;  -- M_rw
+        DATA0                : out std_logic;  -- ALU_add
+        DATA1                : out std_logic;  -- ALU_sub
+        DATA2                : out std_logic;  -- ACC_load
+        DATA3                : out std_logic;  -- ACC_valid
+        opcode               : in  std_logic_vector(3 downto 0)
+        -- Otros puertos internos o señales según sea necesario
+    );
+end entity controller;
+
+
+architecture RTL of controller is
+    type states is (s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10);
+    signal current_state, next_state : states;
+begin
+    -- Secuencia de estados
+    state_sequence: process(clk, nrst) is
+    begin
+        if nrst = '0' then
+            current_state <= s0;
+        elsif rising_edge(clk) then
+            current_state <= next_state;
+        end if;
+    end process state_sequence;
+
+    -- Máquina de estados
+    state_machine: process(current_state, opcode) is
+    begin
+        -- Reiniciar todas las señales de control
+        IR_load    <= '0';
+        IR_valid   <= '0';
+        IR_address <= '0';
+        PC_inc     <= '0';
+        PC_load    <= '0';
+        PC_valid   <= '0';
+        MDR_load   <= '0';
+        MAR_load   <= '0';
+        MAR_valid  <= '0';
+        M_en       <= '0';
+        M_rw       <= '0';
+        ALU_add    <= '0';
+        ALU_sub    <= '0';
+        ACC_load   <= '0';
+        ACC_valid  <= '0';
+        -- Transiciones de estados
+        case current_state is
+            when s0 =>
+                PC_valid <= '1';
+                MAR_load <= '1';
+                PC_inc   <= '1';
+                PC_load  <= '1';
+                next_state <= s1;
+            when s1 =>
+                M_en   <= '1';
+                M_rw   <= '1';
+                next_state <= s2;
+            when s2 =>
+                MDR_valid <= '1';
+                IR_load   <= '1';
+                next_state <= s3;
+            when s3 =>
+                MAR_load  <= '1';
+                IR_address <= '1';
+                if opcode = STORE then
+                    next_state <= s4;
+                else
+                    next_state <= s6;
+                end if;
+            when s4 =>
+                MDR_load  <= '1';
+                ACC_valid <= '1';
+                next_state <= s5;
+            when s5 =>
+                M_en      <= '1';
+                next_state <= s0;
+            when s6 =>
+                M_en   <= '1';
+                M_rw   <= '1';
+                if opcode = LOAD then
+                    next_state <= s7;
+                else
+                    next_state <= s8;
+                end if;
+            when s7 =>
+                MDR_valid <= '1';
+                ACC_load  <= '1';
+                next_state <= s0;
+            when s8 =>
+                M_en   <= '1';
+                M_rw   <= '1';
+                if opcode = ADD then
+                    next_state <= s9;
+                else
+                    next_state <= s10;
+                end if;
+            when s9 =>
+                ALU_add   <= '1';
+                next_state <= s0;
+            when s10 =>
+                ALU_sub   <= '1';
+                next_state <= s0;
+            when others =>
+                next_state <= s0;
+        end case;
+    end process state_machine;
+end architecture RTL;
