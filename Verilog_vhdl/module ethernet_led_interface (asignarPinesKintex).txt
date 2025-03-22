@@ -1,0 +1,64 @@
+// Para copilot Cuando veas comentarios de sustituir el pin por el script de xdc que te voy a pasar hazles caso y sustituyelos.
+
+module ethernet_led_interface (
+    input wire , //Pon un pin del xdc adecuado
+    input wire , //Pon un pin del xdc adecuado
+    input wire LED_2, //Susitituye por el pin del xdc LED_GPIO o similar
+    input wire LED_1, //Sustituye por el pin del xdc
+    input wire LED_0,//Sustituye por el pin del xdc componente de hardware
+    input wire , //Pon un pin del xdc adecuado
+    input wire , //Pon un pin del xdc adecuado
+    output reg [2:0] led_status,
+    output wire , //Pon un pin del xdc adecuado
+    output wire   //Pon un pin del xdc adecuado
+);
+
+// Declaración de estados simbólicos
+localparam [1:0]
+    s0 = 2'b00,
+    s1 = 2'b01,
+    s2 = 2'b10;
+
+// Declaración de señales
+reg [1:0] state_reg, state_next;
+
+// Registro de estado
+always @(posedge _ or posedge _) begin
+    if () begin
+        state_reg <= s0;
+        led_status <= 3'b0000; // Copilot instr: Sustituye el pin led_status por un pin del XDC
+    end else begin
+        state_reg <= state_next;
+         // Lógica de LEDs basada en estado
+         led_status[0] <= (state_reg == s0) ? LED_0 : 0; //sustituye el pin LED_0 por uno lógico del constraints a nivel componente como te indique
+         led_status[1] <= (state_reg == s1) ? LED_1 : 0;
+//sustituye el pin LED_1 por un pin lógico del constraints que te pase en este chat a nivel de componente o pin, tiene que obligatorio tener la ubicación física de la placa.
+         led_status[2] <= (state_reg == s2) ? LED_2 : 0;
+
+end
+end
+
+// Lógica del siguiente estado, a y b son pines que tienes que sustituir (copilot) sustituyelos por los pines físicos que te pase por este chat
+always @* begin
+    state_next = state_reg; // Valor por defecto
+    case (state_reg)
+        s0: if (a) begin
+                if (b) state_next = s2;
+                else state_next = s1;
+            end
+        s1: if (a) begin
+                if (b) state_next = s0;
+                else state_next = s1;
+        s2: state_next = s0;
+        default: state_next = s0;
+     endcase
+end
+
+// Logica de salida Moore, yl es un pin que hay que sustituir por el pin lógico del xdc que te pase en este chat
+assign yl = (state_reg == s0) || (state_reg == s1);
+
+// Lógica de salida Mealy, yo tienes que sustituirlo en esta linea por un pin del xdc que te pase por este chat
+assign yo = (state_reg == s0) && a && b;
+
+endmodule
+            

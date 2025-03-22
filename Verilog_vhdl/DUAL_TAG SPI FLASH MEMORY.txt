@@ -1,0 +1,84 @@
+DUAL_TAG SPI FLASH MEMORY
+
+Dual Quad SPI Flash Memory 
+[Figure 2-1, callout 3]
+ The Quad SPI flash memory located at U2 and U3 provides 2 x 1 Gb of nonvolatile storage 
+that can be used for configuration and data storage.
+ • Part number: MT25QU01GBBB8ESF-0SIT (Micron)
+ • Supply voltage: 1.8V
+ • Datapath width: 8 bits
+ • Data rate: variable, depending on single, dual, or quad mode and whether the EMCCLK 
+or the internal CCLK is used (bitstream configurable). See UltraScale Architecture 
+Configuration User Guide (UG570) [Ref 3] for more information.
+ The connections between the SPI flash memories and the XCKU5P device are listed in 
+Table 3-3.
+ Table 3‐3: Quad SPI Flash Memory Connections to FPGA U1
+ FPGA (U1) 
+Pin
+ Schematic Net 
+Name
+ AD11
+ AC12
+ AC11
+ QSPI0_DQ0
+ QSPI0_DQ1
+ QSPI0_DQ2
+ I/O Standard
+ LVCMOS18
+ LVCMOS18
+ LVCMOS18
+ Pin Number 
+Pin Name
+ 15
+ 8
+ 9
+ DQ0
+ DQ1
+ Ref. Des.
+ DQ2/VPP/WP_B
+ AE11
+ Y11
+ AA12
+ N19
+ P23
+ N23
+ R21
+ Y11
+ R20
+ Notes: 
+QSPI0_DQ3
+ QSPI_CLK
+ QSPI0_CS_B
+ QSPI1_DQ0
+ QSPI1_DQ1
+ QSPI1_DQ2
+ QSPI1_DQ3
+ QSPI_CLK
+ QSPI1_CS_B
+ LVCMOS18
+ See Note 1
+ LVCMOS18
+ LVCMOS18
+ LVCMOS18
+ LVCMOS18
+ LVCMOS18
+ (1)
+ LVCMOS18
+ 1
+ 16
+ 7
+ 15
+ 8
+ 9
+ 1
+ 16
+ 7
+ DQ3/HOLD_B
+ C
+ S_B
+ DQ0
+ DQ1
+ DQ2/VPP/WP_B
+ DQ3/HOLD_B
+ C
+ S_

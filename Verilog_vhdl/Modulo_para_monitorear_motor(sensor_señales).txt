@@ -1,0 +1,11 @@
+//Setup & install para la frecuencia de kintex de 156.25 en KCU116 es igual que en ZCU1106 un user clock
+//Manual guide reference para XDC
+// PCB shemantics pines
+
+//Instrucciones para copilot para programar un sensor basado en la estructura de un sensor de cámaras térmicas para el ISS pero modificados los pines y
+las siguientes funciones:
+//1. Control de la válvula de aceite del motor o turbofán/señales para monitorizar perdidas de aceite/combustible
+//2. Control de la presión de las válvulas y del material con una mini-cámara de infrarojos y otro chip interno cerca de la turbina
+//3. ECA/unidad de control del motor y del aceite/receivt transmit bytes para conectar ahí un chip/Ethernet/USB/SD¿¿
+//4. Control térmico de la turbina para recibir señales de calentamiento/verilog-parecido a una estructura de la memoria RAM o la DDR4-frecuencias voltaje en DDR4 de 1.2 voltios
+//5. RAM/ROM memoria de datos

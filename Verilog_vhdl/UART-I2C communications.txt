@@ -1,0 +1,62 @@
+UART-I2C communications:
+
+ Table 3‐14: FPGA U1 to CP2105GM U166 Connections
+ XC7Z010 SoC (U161)
+ FPGA U1 
+Pin
+ Function Direction I/O Standard
+ Schematic Net 
+Name
+ CP2105GM Device (U166)
+ Pin
+ Function
+ Direction
+ C12
+ B15
+ W12
+ W13
+ Y13
+ AA13
+ TX
+ RX
+ Output
+ Input
+ XCKU5P FPGA (U1) 
+RX
+ TX
+ CTS
+ RTS
+ Input
+ Output
+ Output
+ Input
+ KCU116 Board User Guide
+ LVCMOS18 SYSCTLR_UART_TX
+ LVCMOS18 SYSCTLR_UART_RX
+ LVCMOS18
+ LVCMOS18
+ LVCMOS18
+ LVCMOS18
+ USB_UART_TX
+ USB_UART_RX
+ USB_UART_CTS
+ USB_UART_RTS
+ www.xilinx.com
+ 12
+ 13
+ 21
+ 20
+ 18
+ 19
+ RXD
+ TXD
+ TXD
+ RXD
+ CTS
+ RTS
+ Input
+ Output
+ Output
+ Input
+ Input
+ Output

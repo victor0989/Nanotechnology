@@ -1,0 +1,34 @@
+module pico_sio
+   (
+    input wire clk, reset,
+    input wire [7:0] sw,
+    output wire [7:0] led
+   );
+
+// signal declaration
+wire [9:0] address;
+wire [17:0] instruction;
+wire [7:0] port_id, in_port,
+wire write_strobe;
+// register signals
+reg [7:0] led_reg;
+
+//body
+kcpsm3 proc_unit
+   (.clk(clk), .reset(reset), .address(address),
+    .instruction(instruction), .port-id(), 
+    .write-strobe(write-strobe), .out-port(out-port),  
+    .read-strobe(), .in-port(in-port), .interrupt(l'bO), 
+    . interrupt-ack 0 ; 
+sio-rom rom-unit 
+   ( . clk(c1k) , . address (address), 
+.instruction(instruction)); 
+// output interface
+always @(posedge clk=
+   if (write_strobe)
+       led_reg <= out_port;
+assign led = led_reg;
+// input interface
+assign in_port = sw;
+
+endmodule

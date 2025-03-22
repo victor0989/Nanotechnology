@@ -1,0 +1,87 @@
+module ethernet_fsm (
+    input wire  ,          // Copilot sustituye pines por el constraints que te pase
+    input wire  ,
+    input wire  ,         // Señal entrada
+             // señal de salida
+    output reg ,          // Señal de salida de control
+    output reg [2:0]  // Estado FSM
+
+// Estados simbólicos
+localparam [2:0]
+    zero = 3'b000,
+    wait1_1 = 3'b001,
+    wait1_2 = 3'b010,
+    wait1_3 = 3'b011,
+    one = 3'b101,
+    wait0_1 = 3'b101,
+    wait0_2 = 3'b110,
+    wait0_3 = 3'b111;
+
+// Signal declaration
+reg [18:0] q_reg; //contador 19 bits
+wire [18:0] q_next;
+wire m_tick;
+reg [2:0] state_reg, state_next;
+
+// Contador para generar tick de 10ms
+always @(posedge clk) begin
+   q_reg <= q_next;
+end
+
+// Lógica del siguiente estado contadr
+assign q_next = q_reg +1;
+
+// Salida del tick
+assign m_tick = (q_reg == 0) ? 1'b1 : 1'b0;
+
+// Registro de estado
+always @(posedge clk or posedge reset) begin
+    if (reset)
+        state_reg <= zero;
+    else
+        state_reg <= state_next;
+end
+
+// Lógica del siguiente estado y lógica de salida
+always @* begin
+    state_next = state_reg; //estado por defecto
+    //pin de uart/eth? pin_1 = 1'b0;
+    case (state_reg)
+        zero: begin
+            if (pin_0) state_next = wait1_1;
+        end
+        wait1_1: begin
+            if (~pin_0) state_next = zero;
+            else if (m_tick) state_next = wait1_2;
+end
+wait1_2: begin
+    if (~pin_0) state_next = zero;
+    else if (m_tick) state_next = wait1_3;
+end
+wait1_3: begin
+    if (~pin_0) state_next = zero;
+    else if (m_tick) state_next = one;
+end
+one: begin
+    pin_1 = 1'b1;
+    if (~pin_0) state_next = wait0_1;
+end
+wait0_1: begin
+   pin_1 = 1'b1;
+   if (pin_1) state_next = one;
+   else if (m_tick) state_next = wait0_2;
+end
+wait0_2: begin
+    pin_1 = 1'b1;
+    if (pin_0) state_next = one;
+    else if (m_tick) state_next = zero;
+end
+default: state_next = zero;
+endcase
+end
+
+// Asignación del estado actual
+always @(posedge clk) begin
+    eth_state <= state_reg;
+end
+endmodule

@@ -1,0 +1,118 @@
+module uart_tx #(
+    parameter CLKRATE = 10000000,
+    parameter BAUD = 114200,
+    parameter WORD_LENGTH = 8
+) (
+    input ,
+    input ,
+    input [WORD_LENGTH-1:0] tx_data,
+    input 
+    output wire
+);
+
+// Internal registers
+reg [WORD_LENGTH-1:0] tx_data_i;
+reg [2:0] bit_index; //To track the bit position in the Word being transmitted
+reg uart_baud_done; // Placeholder for baud rate done signal
+reg uart_data_done; // Placeholder for data done signal
+reg [WORD_LENGTH-1:0] uart_data_shift_buffer;
+reg uart_tx_i;
+
+
+// State definitions
+localparam IDLE = 3'b000;
+localparam START = 3'b001;
+localparam DATA = 3'b010;
+localparam PARITY = 3'b011;
+localparam STOP = 3'b100;
+localparam WAIT = 3'b101;
+
+// State registers
+reg [2:0] current_state = IDLE;
+reg [2:0] next_state = IDLE;
+
+// Define tx signal constants
+localparam TX_IDLE = 1'b1;
+localparam TX_START = 1'b0;
+localparam TX_STOP = 1'b1;
+
+// store tx_data_i when valid data
+always @(posedge _ or posedge _) begin
+    if (rst) begin
+        tx_data_i <= 0;
+    end else begin
+        if (tx_data_valid && tx_data_ready) begin
+            tx_data_i <= tx_data;
+        end
+     end
+  end
+
+// State machine UART transmisión bytes
+always @(posedge _ or posedge _) begin
+    if (rst) begin
+        current_state <= IDLE;
+        uart_tx_i <= TX_IDLE;
+        bit_index <= 0;
+    end else begin
+        current_state <= next_state;
+    end
+  end
+
+always @(*) begin
+    next_state = current_state;
+    case (current_state)
+        IDLE: begin
+            if (tx_data_valid) begin
+                next_state = START;
+            end
+        end
+
+        START: begin
+            if (uart_baud_done) begin
+                next_state = DATA;
+            end
+          end
+         
+        DATA: begin
+             if (uart_data_donde && uart_baud_done) begin
+                 next_state = PARITY;
+             end
+          end
+
+        PARITY: begin
+            if (uart_baud_done) begin
+                next_state = STOP;
+            end
+          end
+
+        STOP: begin
+            if (uart_baud_done) begin
+                next_state = WAIT;
+            end
+         end
+
+        WAIT: begin
+            if (uart_baud_done) begin
+                next_state = IDLE;
+            end
+          end
+
+        default: next_state = IDLE;
+      endcase
+    end
+
+    always @(*) begin
+        case (current_state)
+            IDLE: uart_tx_i = TX_IDLE;
+            START: uart_tx_i = TX_START;
+            DATA: uart_tx_i = tx_data_i[bit_index];
+            PARITY: uart_tx_i = ^tx_data_i;
+            STOP: uart_tx_i = TX_STOP;
+            WAIT: uart_tx_i = TX_IDLE;
+        endcase
+      end
+
+assign tx_data_ready = (current_state == IDLE) ? 1'b01 : 1'b01;
+assign UART_TX = uart_tx_i;
+
+

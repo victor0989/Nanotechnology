@@ -1,0 +1,79 @@
+//Microblace interface
+
+Listing A.9 Sequential circuit template 
+I 
+I 
+// 
+, , 
+Universal counter function table 
+// syn-clr load en 
+5 
+// 
+// 
+/ / 
+// 
+I 
+0 - 
+q* - 
+0 
+operation 
+synchronous clear 
+1- d parallel load 
+0 
+0 
+I 
+q+l 
+count up 
+REGULAR SEQUENTIAL CIRCUITS 
+// 
+0 
+0 0 9 pause 
+module bin-counter 
+#(parameter N=8) 
+( 
+// default 8 
+input wire clk, reset , 
+IS 
+20 
+30 
+3s 
+// clock & reset 
+input wire syn-clr, load, en, // input control 
+input wire [N-1:01 d, 
+output wire max-tick, 
+output wire [N-1:OI q 
+1; 
+// constant declaration 
+localparam MAX = 2**N - 1; 
+// signal declaration 
+reg [N-1:Ol r-reg, r-next; 
+// register 
+............................................. 
+// input data 
+// output status 
+// output data 
+// register 
+always O(posedge clk, posedge reset) 
+if (reset) 
+r-reg <= 0; 
+else 
+r-reg <= r-next; 
+............................................. 
+// next-state logic 
+............................................. 
+40 
+always Q* 
+if (syn-clr) 
+r-next = 0; 
+else if (load) 
+r-next = d; 
+else if (en) 
+r-next = r-reg + 1; 
+else 
+r-next = r-reg; 
+............................................. 
+// output logic 
+............................................. 
+assign q = r-reg; 
+assign max-tick = (r-reg==2**N-1) ? l 'bl : 17bO; 
+endmodule

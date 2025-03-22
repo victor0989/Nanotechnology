@@ -1,0 +1,126 @@
+//Script-file para el sensor de temperatura
+//sensor de temperatura y sensor de cambio en materiales de una turbina(se creativo copilot)
+//Instrucciones para copilot para programar un sensor basado en la estructura de un sensor de cámaras térmicas para el ISS pero modificados los pines y
+las siguientes funciones:
+//1. Control de la válvula de aceite del motor o turbofán/señales para monitorizar perdidas de aceite/combustible
+//2. Control de la presión de las válvulas y del material con una mini-cámara de infrarojos y otro chip interno cerca de la turbina
+//3. ECA/unidad de control del motor y del aceite/receivt transmit bytes para conectar ahí un chip/Ethernet/USB/SD¿¿
+//4. Control térmico de la turbina para recibir señales de calentamiento/verilog-parecido a una estructura de la memoria RAM o la DDR4-frecuencias voltaje en DDR4 de 1.2 voltios
+//5. RAM/ROM memoria de datos
+//Manda señales para detectar corrosión y recíbelas a modo de HDMI a la SD o a una pantalla etc
+//Asigna el pin/pines correspondientes del XDC que voy a pasarte para el modulo o module ehdc_module
+module ehdc_module (
+    input wire      ,
+    input wire      ,
+    input wire [15:0]   , //Datos de entrada
+    input wire          , // Datos temperatura
+    input wire          , // Datos presión de válvula
+    output wire [15:0]  , // Datos láser infrarojo opcional -receiivt transmit
+    input wire [15:0]   , // Otros.. 
+    input wire [6:0]   ,  // Ethernet cable bytes
+    output wire [7:0]  ,  // RAM opcional
+    output wire [7:0]  ,  // Ethernet signals para recibir señales del control del aceite del motor o turbofán
+    input wire    , // Señales de la Unidad de control del aceite del motor
+    input wire    ,   // Señales opcionales 
+    input wire    ,
+    output wire   
+);
+
+// Señales internas
+wire [7:0] ethernet_data;
+// Señal de salida del codificador con 10 bits
+wire [9:0] tmds_encoded;
+
+// Señal de infrarojos 10 bits
+wire [9:0] infrared_encoded;
+
+// Señal de aceite
+wure [7:0] infrared_oil_signal
+
+// Lógica de control de alimentación del motor
+//
+reg power_state;
+//Asigna los pines correspondientes del XDC copilot
+always @(posedge _ or posedge _) begin
+    if (reset)
+        power_state <= 1'b0;
+    else if (power_control)
+        power_state <= ~power_state;
+end
+
+// Lógica de telemetría de estado del motor o turbina
+reg [15:0] temperature, pressure, current;
+//Asigna el pin/pines correspondientes del XDC que voy a pasarte.
+always @(posedge _) begin
+   // Aquí se asume que los sensores son señales de 1 bit que se adaptan al contexto
+  // ajustar según el ancho real de cada sensor
+  temperature <= {8'b0, temp_sensor};
+  pressure    <= {8'b0, press_sensor};
+  current     <= {8'b0, current_sensor};
+  oil         <= {8`b0, oil_sensor};
+end
+
+// Lógica del watchdog timer
+//
+reg[31:0] watchdog_counter;
+always @(posedge clk or posedge reset) begin
+    if (reset)
+        watchdog_counter <= 32'b0;
+    else
+        watchdog_counter <= watchdog_counter + 1;
+
+end
+assign watchdog_reset = (watchdog_counter == 32'hFFFFFFFF);
+
+// Control del zoom de la cámara opcional/infrarojos/chip design
+reg [15:0] zoom_level;
+//sustituir 2 pines por el XDC o constraints que te voy a pasar a esta conversación junto con este scriot copilot
+always @(posedge _ or posedge _) begin
+    if (reset)
+        zoom_level <= 16'b0;
+    else if (zoom_control)
+        zoom_level <= zoom_level + 1;
+end
+
+// Control de la temperatura o calentador del motor o turbina a reacción
+assign heater_control = (temperature < 16'd300);
+// Ejemplo: encender o transmitir dato si temp < 300/ encender o transmitir data bytes a control de piloto si temp 300 >/ASCII se podria emplear en este algoritmo->toma nota copilot
+//--
+//thermal_control
+thermal_control_turbine (
+    .eth    (eth), //<- sustituir por un pin del constraints XDC que te pase a copilot
+    .thermal_data(data_out),
+    .rgb_data  (video_data) // Se conecta al bus de 8 bits video_data
+);
+
+// LEDs de estado
+// --
+assign status_leds = {power_state, temperature[7:0]};
+
+// Circuito verificar y detectar flancos de subida
+reg [7:0] b_reg, d_reg;
+wire [7:0] b_next, d_next;
+reg btn_reg, db_reg;
+wire db_level, db_tick, btn_tick, clr;
+
+// Detecion de flancos
+always @(posedge clk) begin
+    btn_reg <= btn[1];
+    db_reg <= db_level;
+end
+assign btn_tick = ~btn_reg & btn[1];
+assign db_tick  = ~db_reg  & db_level;
+
+    //==========================================================================
+    // Contadores y reinicio mediante botón
+    //--------------------------------------------------------------------------
+    assign clr = btn[0];
+    always @(posedge clk) begin
+        b_reg <= b_next;
+        d_reg <= d_next;
+    end
+    assign b_next = (clr) ? 8'b0 : (btn_tick) ? b_reg + 1 : b_reg;
+    assign d_next = (clr) ? 8'b0 : (db_tick)  ? d_reg + 1 : d_reg;
+
+endmodule
+

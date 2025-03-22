@@ -1,0 +1,128 @@
+//SRAM controller 255
+//Copilot tiene que nombrar los puertos físicos con este script y el XDC tiene que sustituir los huecos _ por los nombres de los puertos físicos
+que están ya puestos en el constraints que le pase no tiene que crear nada nuevo. Solo tiene que nombrar los puertos del constraints aquí en los puertos de
+este script
+//A la lógica le puede dar un repaso copilot para ver si tiene errores o cosas interesantes que explicar
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity sram_ctrl is
+   port(
+     _, _: in srd_logic;
+    -- to/from main system
+    _: in std_logic;
+    _: in std_logic_vector(17 downto 0);
+    _: in std_logic_vector(15 downto 0);
+    _: out std_logic;
+    _,_:
+      out std_logic_vector(15 downto 0);
+    -- to/from chip
+    _: out std_logic_vector(17 downto 0);
+    _,_: out std_logic;
+    -- SRAM chip a
+    _: inout std_logic_vector(15 downto 0);
+end sram_ctrl;
+
+architecture arch of sram_ctrl is
+   type state_type is (idle, rd1, rd2, wr1, wr2);
+   signal state_reg, state_next: state_type;
+   signal data_f2s_reg, data_f2s_next:
+          std_logic_vector(15 downto 0);
+   signal data_s2f_reg, data_s2f_next:
+          std_logic_vector(15 downto 0);
+   signal addr_reg, addr_next: std_logic_vector(17 downto 0);
+   signal we_buf, oe_buf, tri_buf: std_logic;
+   signal we_reg, oe_reg, tri_reg: std_logic;
+begin
+   -- state & data registers
+   process(_,_) //sustituir por pines fisicons
+   begin
+      //256
+      if (_='1') then
+         state_reg <= idle;
+         addr_reg <= (others=>'0');
+         data_f2s_reg <= (others=>'0');
+         data_s2s_reg <= )others=>'0');
+         tri_reg <= '1';
+         we_reg <= '1':
+         oe_reg <= '1';
+      elseif (_'evento and _='1') then
+          state_reg <= state_next;
+          addr_reg <= addr_next;
+          data_f2s_reg <= data_f2s_next;
+          data_s2f_reg <= data_s2f_next;
+          tri_reg <= tri_buf;
+          we_reg <= we_buf;
+          oe_reg <= oe_buf;
+      end if;
+    end process;
+    - next-state logic 
+      process (state-reg ,mem ,rw ,dio-a ,addr ,data-f2s, 
+               dataf2s_reg, data-s2f -reg, addr-reg) 
+  begin 
+   addr-next <= addr-reg ; 
+   data-f 2s-next <= data-f 2s-reg; 
+   data_s2f_next <= data-s2f_reg; 
+   ready <= ’ 0 ’ ; 
+   case state_reg is
+    when idle =>
+       if _='0' then
+          state_next <= idle;
+       else
+// copilot fíjate cuando veas if _ <= es un pin o puerto físico del XDC que tengo que mandarte para que asignes el pin
+          addr_next <= addr;
+          if _='0' then --write
+             state_next <= wr1;
+             data_f2s_next <= data_f2s;
+          else -- read
+             state_next <= rd1;
+          end if;
+       end if;
+       ready <= '1';
+    when wr1 =>
+       state_next <= wr2;
+    when wr2 =>
+       state_next <= rd2;
+    when rd2=>
+       data_s2f_next <= dio_a;
+       state_next <= idle;
+   end case;
+ end process;
+ -- look ahead output logic
+ process(state_next)
+ begin
+    tri_buf <= '1'; 
+    we_buf <= '1';
+    oe_buf <= '1';
+    case state_next is
+       when idle =>
+       when wr1 =>
+          tri_buf <= '0';
+          we_buf <= '0';
+       when wr2 =>
+          tri_buf <= '0';
+       when rd1 => 
+          oe_buf <= '0';
+       when rd2 =>
+          oe_buf <= '0';
+     end case;
+  end process;
+-- to main system
+data_s2f_r <= data_s2f_reg;
+data_s2f_ur <= dio_a;
+-- to SRAM
+we_n <= we_reg;
+oe_n <= oe_reg;
+ad <= addr_reg;
+-- i/o for SRAM chip a
+ce_a_n <='0';
+ub_a_n <='0';
+lb_a_n <='0';
+dio_a <= data_f2s_reg when tri_reg='0' else (others=>'Z');
+end arch;
+
+//optional configuration: To minimize the off-chip pad delay (discussed in Section 10.5.1), the corresponding 
+//FPGA’s I/O pins should be configured properly. This can be done by adding additional 
+//information in the constraint file. A typical line is 
+//NET “ad<l7>“ LOC = “L3“ I IOSTANDARD = LVCMOS33 I SLEW=FAST ; 

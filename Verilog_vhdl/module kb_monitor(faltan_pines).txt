@@ -1,0 +1,85 @@
+module kb_monitor
+   (
+    input wire _, _,
+    input wire _, _,
+    output wire _
+   );
+// constant declaration
+localparam SP=8'h20; // space in ASCII
+// symbolic state declaration
+localparam [1:0]
+   idle = 2'b00,
+   send1 = 2'b01,
+   send0 = 2'b10,
+   sendb = 2'b11;
+
+// signal declaration
+reg [1:0] state_reg, state_next;
+reg [7:0] w_data, ascii_code;
+wire [7:0] scan_data;
+reg wr_uart;
+wire scan_done_tick;
+wire [3:0] hex_in;
+
+// body
+// instantiation
+// instantiate ps2 receiver
+
+ps2_rx ps2_rx_unit
+   (._, ._, .rx_en(1'b1), //sustituye estos pines
+    ._(), ._(),//sustituye esto _ por un pin fisico del constraints que voy a pasarte
+    .rx_done_tick(scan_done_tick), dout(scan_data));
+
+// instantiate UART
+uart uart_unit
+   (._(), ._(), .(), 
+    ._(), ._(),
+    .rx_done_tick(scan_done_tick),
+// state registers
+always @(posedge _, posedge _)
+   if ()
+      state_reg <= idle;
+   else
+      state_reg <= state_next;
+
+// next-state logic
+always @*
+begin
+   wr_uart = 1'b0;
+   w_data = SP;
+   state_next = state_reg;
+   case (state_reg)
+      idle:
+         if (scan_done_tick) // a scan code received
+            state_next = send1;
+      send1: // Send higher hex char
+
+// PS2 KEYBOARD SCAN CODE
+begin
+   w_data = ascii_code;
+   wr_uart = 1'b1;
+   state_next = send0;
+end
+send0: // send lower hex char
+begin
+   w_data = ascii_code;
+   wr_uart = 1'b1;
+   state_next = sendb;
+end
+sendb: // send blank char
+begin
+   w_data = SP;
+   wr_uart = 1'b1;
+   state_next = idle;
+end
+endcase
+end
+(Pag 276)
+// scan code to ASCII display
+// Split the scan code into two 4-bit hex
+assign hex_in = (state_reg==send1)? scan_data[7:4] :
+scan_data[3:0];
+
+// hex digit to ASCII code
+always @*
+ case (hex_in)
